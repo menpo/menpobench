@@ -1,7 +1,8 @@
 from menpobench.dataset import retrieve_datasets
 from menpobench.method import retrieve_method, retrieve_untrainable_method
-from menpobench.utils import norm_path
+from menpobench.utils import norm_path, load_module
 import yaml
+from pathlib import Path
 
 
 def invoke_benchmark(yaml_path):
