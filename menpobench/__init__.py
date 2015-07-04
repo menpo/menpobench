@@ -27,3 +27,6 @@ def menpobench_dir():
 
 def predefined_dir():
     return menpobench_dir() / 'predefined'
+
+
+from .base import invoke_benchmark

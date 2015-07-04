@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 import sys
 import versioneer
+import os
 
 install_requires = ['menpofit>=0.2,<0.3', 'pyyaml>=3.11,<4.0']
 
@@ -17,4 +18,5 @@ setup(name='menpobench',
       package_data={'menpobench': ['predefined/dataset/*.py',
                                    'predefined/method/*.py']},
       tests_require=['nose'],
+      scripts=[os.path.join('menpobench', 'bin', 'menpobench')],
       install_requires=install_requires)
