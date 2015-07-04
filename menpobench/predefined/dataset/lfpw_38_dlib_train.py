@@ -1,5 +1,5 @@
 import menpo.io as mio
-from . import managed_dataset
+from menpobench.dataset import managed_dataset
 
 
 def generate_dataset():
