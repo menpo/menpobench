@@ -1,4 +1,4 @@
-from .base import train
+from .base import retrieve_method
 
 
 class MenpoFitterWrapper(object):

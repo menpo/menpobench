@@ -14,5 +14,7 @@ setup(name='menpobench',
       author='The Menpo Development Team',
       author_email='james.booth08@imperial.ac.uk',
       packages=find_packages(),
+      package_data={'menpobench': ['predefined/dataset/*.py',
+                                   'predefined/method/*.py']},
       tests_require=['nose'],
       install_requires=install_requires)
