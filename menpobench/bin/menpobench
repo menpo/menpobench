@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+from menpobench import invoke_benchmark
+
+
+if __name__ == "__main__":
+    from argparse import ArgumentParser
+    parser = ArgumentParser(
+        description=r"""
+        The Menpo Deformable Model benchmarking suite
+        """)
+    parser.add_argument("yaml_path", help="Path to a yaml configuration file")
+    ns = parser.parse_args()
+    invoke_benchmark(ns.yaml_path)
