@@ -9,10 +9,12 @@ from menpobench.utils import checksum, download_file, extract_tar
 
 DatasetSource = namedtuple('DatasetSource', ['name', 'url', 'sha1'])
 
+MENPO_CDN_URL = 'http://cdn.menpo.org.s3.amazonaws.com/'
+
 # ----------- manged datasets ---------- #
 
 MANAGED_DATASETS = {
-    'lfpw': DatasetSource('lfpw', 'cdn.menpo.org.s3.amazonaws.com/lfpw.tar.gz',
+    'lfpw': DatasetSource('lfpw', MENPO_CDN_URL + 'lfpw.tar.gz',
                           '5859560f8fc7de412d44619aeaba1d1287e5ede6')
 }
 
@@ -46,24 +48,30 @@ def checksum_of_dataset(name):
     return checksum(database_tar_path(name))
 
 
-def download_datset_if_needed(name, verbose=False):
+def download_dataset_if_needed(name, verbose=False):
     if name not in MANAGED_DATASETS:
         if verbose:
             raise ValueError("'{}' is not a managed dataset".format(name))
     info = MANAGED_DATASETS[name]
     if database_tar_path(name).is_file():
+        if verbose:
+            print("'{}' is already cached - checking "
+                  "integrity...".format(name))
         if checksum_of_dataset(name) != info.sha1:
             if verbose:
-                print("Warning: cached version of '{}' has incorrect hash - "
+                print("Warning: cached version of '{}' failed checksum - "
                       "clearing cache".format(name))
             cleanup_dataset_tar(name)
-            download_datset_if_needed(name)
+            download_dataset_if_needed(name, verbose=verbose)
         else:
             if verbose:
-                print("'{}' is cached and validated".format(name))
+                print("'{}' checksum validated".format(name))
+            return
     else:
+        if verbose:
+            print("'' is not cached - downloading...".format(name))
         download_file(info.url, database_tar_path(name))
-        download_datset_if_needed(name)
+    download_dataset_if_needed(name, verbose=verbose)
 
 
 def unpack_dataset(name):
@@ -81,11 +89,15 @@ def cleanup_dataset_tar(name):
 
 
 @contextmanager
-def managed_dataset(name, verbose=False):
+def managed_dataset(name, verbose=True):
     # Ensure the dataset in question is cached locally
-    download_datset_if_needed(name, verbose=verbose)
+    download_dataset_if_needed(name, verbose=verbose)
     cleanup_unpacked_dataset_if_present(name)
+    if verbose:
+        print("unpacking cached '{}' for use".format(name))
     unpack_dataset(name)
+    if verbose:
+        print("'{}' is unpacked".format(name))
     try:
         yield dataset_path(name)
     finally:
