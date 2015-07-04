@@ -9,3 +9,29 @@ CACHE_DIR = Path(os.path.expanduser('~')) / 'menpobenchcache'
 
 if not CACHE_DIR.is_dir():
     CACHE_DIR.mkdir()
+
+
+def menpobench_dir():
+    r"""The path to the top of the menpobench Python package.
+
+    Useful for locating where the data folder is stored.
+
+    Returns
+    -------
+    path : ``pathlib.Path``
+        The full path to the top of the menpobench package
+    """
+    from pathlib import Path  # to avoid cluttering the menpo.base namespace
+    return Path(os.path.abspath(__file__)).parent
+
+
+def predefined_dir():
+    return menpobench_dir() / 'predefined'
+
+
+def predefined_dataset_dir():
+    return predefined_dir() / 'dataset'
+
+
+def predefined_dataset_path(name):
+    return predefined_dataset_dir() / '{}.py'.format(name)

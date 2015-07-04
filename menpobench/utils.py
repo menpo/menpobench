@@ -2,6 +2,7 @@ import hashlib
 import tarfile
 import urllib2
 import shutil
+import imp
 
 
 def checksum(fname, blocksize=65536):
@@ -24,3 +25,8 @@ def download_file(url, path_to_download):
 def extract_tar(fname, destination):
     with tarfile.open(str(fname)) as tar:
         tar.extractall(path=str(destination))
+
+
+def load_module(path):
+    name = path.stem
+    return imp.load_source(name, str(path))
