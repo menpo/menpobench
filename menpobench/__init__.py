@@ -27,19 +27,3 @@ def menpobench_dir():
 
 def predefined_dir():
     return menpobench_dir() / 'predefined'
-
-
-def predefined_dataset_dir():
-    return predefined_dir() / 'dataset'
-
-
-def predefined_dataset_path(name):
-    return predefined_dataset_dir() / '{}.py'.format(name)
-
-
-def predefined_method_dir():
-    return predefined_dir() / 'method'
-
-
-def predefined_method_path(name):
-    return predefined_method_dir() / '{}.py'.format(name)
