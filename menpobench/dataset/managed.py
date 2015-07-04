@@ -12,9 +12,12 @@ MENPO_CDN_URL = 'http://cdn.menpo.org.s3.amazonaws.com/'
 # ----------- manged datasets ---------- #
 
 MANAGED_DATASETS = {
+    'lfpw_micro': DatasetSource('lfpw_micro', MENPO_CDN_URL + 'lfpw_micro.tar.gz',
+                          '0f34c94687e90334e012f188531157bd291d6095'),
     'lfpw': DatasetSource('lfpw', MENPO_CDN_URL + 'lfpw.tar.gz',
                           '5859560f8fc7de412d44619aeaba1d1287e5ede6')
 }
+
 
 # ----------- Cache path management ---------- #
 

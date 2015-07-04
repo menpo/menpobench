@@ -3,6 +3,7 @@ import tarfile
 import urllib2
 import shutil
 import imp
+import os
 
 
 def checksum(fname, blocksize=65536):
@@ -30,3 +31,11 @@ def extract_tar(fname, destination):
 def load_module(path):
     name = path.stem
     return imp.load_source(name, str(path))
+
+
+def norm_path(filepath):
+    r"""
+    Uses all the tricks in the book to expand a path out to an absolute one.
+    """
+    return os.path.abspath(os.path.normpath(
+        os.path.expandvars(os.path.expanduser(str(filepath)))))

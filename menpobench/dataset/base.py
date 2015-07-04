@@ -1,6 +1,7 @@
 from menpobench.utils import load_module
 from pathlib import Path
 from menpobench import predefined_dataset_path
+from itertools import chain
 
 
 def load_module_for_dataset(name):
@@ -19,6 +20,10 @@ def wrap_dataset_with_preprocessing_step(img_generator):
 
 
 def generate_dataset(name):
-    module = load_module(predefined_dataset_path(name))
+    module = load_module_for_dataset(name)
     img_generator = getattr(module, 'generate_dataset')
     return wrap_dataset_with_preprocessing_step(img_generator)
+
+
+def generate_chained_datasets(names):
+    return chain(*(generate_dataset(d) for d in names))

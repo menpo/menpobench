@@ -11,6 +11,7 @@ requirements:
     - python
     - pathlib 1.0  # [py2k]
     - menpofit 0.2.*
+    - pyyaml 3.*
 
 
 test:
