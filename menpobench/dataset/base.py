@@ -1,7 +1,7 @@
-from menpobench.utils import load_module
-from pathlib import Path
+from menpobench.utils import load_module_with_error_messages
 from menpobench import predefined_dir
 from itertools import chain
+from functools import partial
 
 
 def predefined_dataset_dir():
@@ -12,13 +12,8 @@ def predefined_dataset_path(name):
     return predefined_dataset_dir() / '{}.py'.format(name)
 
 
-def load_module_for_dataset(name):
-    if name.endswith('.py'):
-        print('custom path presented - loading...')
-        return load_module(Path(name))
-    else:
-        print('builtin module used')
-        return load_module(predefined_dataset_path(name))
+load_module_for_dataset = partial(load_module_with_error_messages,
+                                  'dataset', predefined_dataset_path)
 
 
 def wrap_dataset_with_preprocessing_step(img_generator):

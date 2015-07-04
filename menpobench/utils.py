@@ -4,6 +4,7 @@ import urllib2
 import shutil
 import imp
 import os
+from pathlib import Path
 
 
 def checksum(filepath, blocksize=65536):
@@ -43,6 +44,24 @@ def load_module(path):
     """
     name = path.stem
     return imp.load_source(name, str(path))
+
+
+def load_module_with_error_messages(module_type, predefined_f, name):
+    if name.endswith('.py'):
+        # custom module
+        try:
+            module = load_module(Path(name))
+        except IOError:
+            raise ValueError("Requested custom {} at path '{}' "
+                             "does not exist".format(module_type, name))
+    else:
+        # predefined module
+        try:
+            module = load_module(predefined_f(name))
+        except IOError:
+            raise ValueError("Requested predefined {} '{}' "
+                             "does not exist".format(module_type, name))
+    return module
 
 
 def norm_path(filepath):

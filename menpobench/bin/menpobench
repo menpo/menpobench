@@ -12,4 +12,8 @@ if __name__ == "__main__":
         """)
     parser.add_argument("yaml_path", help="Path to a yaml configuration file")
     ns = parser.parse_args()
-    invoke_benchmark(ns.yaml_path)
+    try:
+        invoke_benchmark(ns.yaml_path)
+    except ValueError as e:
+        print('ERROR: {}'.format(e.message))
+        exit(1)
