@@ -1,6 +1,7 @@
 import hashlib
 import tarfile
 import urllib2
+import shutil
 
 
 def checksum(fname, blocksize=65536):
@@ -14,10 +15,10 @@ def checksum(fname, blocksize=65536):
 
 
 def download_file(url, path_to_download):
-    f = urllib2.urlopen(url)
-    with open(path_to_download, 'wb') as fp:
-        fp.write(f.read())
-    fp.close()
+    req = urllib2.urlopen(url)
+    with open(str(path_to_download), 'wb') as fp:
+        shutil.copyfileobj(req, fp)
+    req.close()
 
 
 def extract_tar(fname, destination):
