@@ -202,9 +202,83 @@ instantaneously.
 That's no problem, just pass the `--force` option to `menpobench` and reproduce
 the results on your own machine.
 
+## How do I know what keys are available?
+
+You can run `menpobench --all-opts` to output an exhaustive list of what keys
+are valid in what sections.
+
+## How do I know what a key actually does?
+
+Keys that you can use in the schema simply map to python files in menpobench.
+You can inspect these files to see exactly how a given part of menpobench is
+implemented. If you think we are doing something wrong, issue a PR and tell us
+about it.
+
+## I want to test on a dataset or on a method that is not shipped as part of menpobench - how do I do that?
+
+In leiu of providing names like `lfpw_38_dlib_train` which will refer to a
+builtin component of menpobench, you can provide the path to your own python
+file. This python file will have to follow the same design patterns as the
+builtin files used in the relevant section. For instance, all dataset loading
+components are actually python files with a callable inside them called
+`generate_dataset()`. This is expected to be a generator yielding Menpo Image
+objects with landmarks attached with specific group names:
+
+- `bbox` - the bounding box annotation for this image
+- `gt_shape` - the ground truth shape of this image
+
+A simple example of a database loading component looks like this[3]:
+
+```py
+import menpo.io as mio
+from pathlib import Path
+DB_PATH = Path('/vol/atlas/database/my_dataset')
+# lets assume this database has the form
+#
+# ./my_dataset
+#    ./training_images
+#      ./IMG_000.jpg
+#      ...
+#    ./gt
+#      ./IMG_000.ljson
+#      ...
+#    ./bbox
+#      ./IMG_000.ljson
+#      ...
+#
+def generate_dataset():
+    for path in (DB_PATH / 'training_images').glob('*.jpg'):
+        im = mio.import_image(path)
+        im.landmarks['gt'] = mio.import_landmark_file(DB_PATH / 'gt' / (path.stem + '.ljson'))
+        im.landmarks['bbox'] = mio.import_landmark_file(DB_PATH / 'bbox' / (path.stem + '.ljson'))
+        yield im
+```
+
+If you saved this file as `./path/to/my_dataset.py`, you could use it for training in our previous example as
+
+```yaml
+training_data:
+    - lfpw_38_dlib_train
+    - ibug_38_dlib_train
+    - ./path/to/my_dataset.py
+testing_data:
+    - lfpw_38_dlib_test
+methods:
+    - SDM
+    - AAM
+untrainable_methods:
+    - intraface
+```
+
+
 [1]: If you have installed menpobench inside a conda env as recommended, you
 will first have to activate the environment before the tool is available, e.g.
 `source activate mymenpoenv`.
 
 [2]: Of course, if the tool in question needs Matlab you'll need to have that
 on your system yourself.
+
+[3]: You'll notice that internal databases loading mechanisms have a little more
+boilerplate code at the top of the file in order to lazily load a
+menpobench-managed dataset (and to not have absolute paths), but they are in
+essence the same as the example shown here.
