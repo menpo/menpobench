@@ -1,4 +1,4 @@
-from .base import retrieve_method
+from .base import retrieve_method, retrieve_untrainable_method
 
 
 class MenpoFitterWrapper(object):
