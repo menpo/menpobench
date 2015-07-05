@@ -12,8 +12,13 @@ def invoke_benchmark(yaml_path):
     for m in c['methods']:
         train = retrieve_method(m)
         training_generator = retrieve_datasets(c['training_data'])
+        print("Training '{}' with {}".format(m, ', '.join(
+            "'" + d + "'" for d in c['training_data'])))
         test = train(training_generator)
+        print("Training of '{}' completed.".format(m))
         testing_generator = retrieve_datasets(c['testing_data'])
+        print("Testing '{}' with {}".format(m, ', '.join(
+            "'" + d + "'" for d in c['testing_data'])))
         results = test(testing_generator)
 
     for m in c['untrainable_methods']:

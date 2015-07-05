@@ -26,11 +26,25 @@ def retrieve_dataset(dataset_name):
     module = load_module_for_dataset(dataset_name)
     img_generator = getattr(module, 'generate_dataset')
     # we have a hold on the loading function, but we have some base
-    # preprocessing that we always perform per-image. Wrap the generator with
-    # the basic preprocessing before we return it.
+    # pre-processing that we always perform per-image. Wrap the generator with
+    # the basic pre-processing before we return it.
     return wrap_dataset_with_preprocessing_step(img_generator)
 
 
+from menpo.visualize.textutils import print_dynamic
+
+
+def print_processing_status(image_generator):
+    i = 0
+    for i, image in enumerate(image_generator, 1):
+        print_dynamic('Pre-processing image {}'.format(i))
+        yield image
+    print_dynamic('{} images pre-processed.'.format(i))
+    print('')
+
+
 def retrieve_datasets(dataset_names):
-    # chain together a list of datasets in a row
-    return chain(*(retrieve_dataset(d) for d in dataset_names))
+    # chain together a list of datasets in a row, reporting the progress as
+    # we go.
+    return print_processing_status(
+        chain(*(retrieve_dataset(d) for d in dataset_names)))

@@ -71,6 +71,7 @@ def load_module_with_error_messages(module_type, predefined_f, name):
         # custom module
         try:
             module = load_module(Path(name))
+            # print("Loaded custom {} from '{}'".format(module_type, name))
         except IOError:
             raise ValueError("Requested custom {} at path '{}' "
                              "does not exist".format(module_type, name))
@@ -78,6 +79,7 @@ def load_module_with_error_messages(module_type, predefined_f, name):
         # predefined module
         try:
             module = load_module(predefined_f(name))
+            # print("Loaded predefined {} '{}'".format(module_type, name))
         except IOError:
             raise ValueError("Requested predefined {} '{}' "
                              "does not exist".format(module_type, name))

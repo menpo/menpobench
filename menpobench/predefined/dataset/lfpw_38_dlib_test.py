@@ -3,9 +3,8 @@ from menpobench.dataset import managed_dataset
 
 
 def generate_dataset():
-    with managed_dataset('lfpw_micro') as lfpw_path:
-        train_path = lfpw_path / 'testset'
-        for path in train_path.glob('*.png'):
+    with managed_dataset('lfpw') as lfpw_path:
+        for path in (lfpw_path / 'testset').glob('*.png'):
             img = mio.import_image(path, normalise=False)
             img.landmarks['gt'] = img.landmarks['PTS']
             del img.landmarks['PTS']
