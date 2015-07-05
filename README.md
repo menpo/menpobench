@@ -162,7 +162,7 @@ the `menpobench` command:
 In this instance, our YAML describes an experiment where we want to compare the
 performance of an Supervised Decent Method (SDM) model against an Active
 Appearance Model (AAM) and the popular closed-source
-[intraface](http://www.humansensing.cs.cmu.edu/intraface/) SDM implementation.
+[Intraface](http://www.humansensing.cs.cmu.edu/intraface/) SDM implementation.
 The test set is chosen from a standard list of test-sets that menpobench
 provides. menpobench will:
 
@@ -177,7 +177,7 @@ using 38 points and dlib object detection bounding boxes.
 4. Report back the results of the evaluation in a normalization-agnostic way, so
 you can interpret it in a number of ways.
 
-## Wait but you are comparing against intraface, which isn't part of menpofit
+## Wait but you are comparing against Intraface, which isn't part of menpofit
 
 menpobench tries hard to automatically acquire testing data and provide easy
 ways to call other popular methods. Where possible we will handle the
@@ -250,7 +250,7 @@ DB_PATH = Path('/vol/atlas/database/my_dataset')
 def generate_dataset():
     for path in (DB_PATH / 'training_images').glob('*.jpg'):
         im = mio.import_image(path)
-        im.landmarks['gt'] = mio.import_landmark_file(DB_PATH / 'gt' / (path.stem + '.ljson'))
+        im.landmarks['gt_shape'] = mio.import_landmark_file(DB_PATH / 'gt' / (path.stem + '.ljson'))
         im.landmarks['bbox'] = mio.import_landmark_file(DB_PATH / 'bbox' / (path.stem + '.ljson'))
         yield im
 ```
