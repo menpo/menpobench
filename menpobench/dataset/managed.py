@@ -1,22 +1,67 @@
 from contextlib import contextmanager
-from collections import namedtuple
 import shutil
 
 from menpobench.config import resolve_cache_dir
 from menpobench.utils import checksum, download_file, extract_tar, create_path
 
-DatasetSource = namedtuple('DatasetSource', ['name', 'url', 'sha1'])
-
 MENPO_CDN_URL = 'http://cdn.menpo.org.s3.amazonaws.com/'
+MENPO_CDN_DATASET_URL = MENPO_CDN_URL + 'datasets/'
+
+
+class DatasetSource(object):
+
+    def __init__(self, name, sha1):
+        self.name = name
+        self.sha1 = sha1
+
+
+    @property
+    def url(self):
+        return MENPO_CDN_DATASET_URL + '{}.tar.gz'.format(self.name)
+
 
 # ----------- manged datasets ---------- #
+#
+# Managed datasets that menpobench is aware of. These datasets will be
+# downloaded from the Team Menpo CDN dynamically and used for evaluations.
+#
+# To prepare a dataset for inclusion in menpobench:
+#
+# 1. Prepare the folder for the dataset on disk as normal. Ensure only
+#    pertinent files are in the dataset folder. The name of the entire dataset
+#    folder should follow Python variable naming conventions - lower case words
+#    seperated by underscores (e.g. `./dataset_name/`). Note that this name
+#    needs to be unique among all manged datasets.
+#
+# 2. tar.gz the entire folder:
+#      > tar -zcvf dataset_name.tar.gz ./dataset_name/
+#
+# 3. Record the SHA-1 checksum of the dataset archive:
+#      > shasum dataset_name.tar.gz
+#
+# 4. Upload the dataset archive to the Team Menpo CDN contact github/jabooth
+#    for details)
+#
+# 5. Add the dataset source to the _MANGED_DATASET_LIST below.
+#
+#
+_MANAGED_DATASET_LIST = [
+    DatasetSource('lfpw_micro', '0f34c94687e90334e012f188531157bd291d6095'),
+    DatasetSource('lfpw', '5859560f8fc7de412d44619aeaba1d1287e5ede6')
+]
 
-MANAGED_DATASETS = {
-    'lfpw_micro': DatasetSource('lfpw_micro', MENPO_CDN_URL + 'lfpw_micro.tar.gz',
-                          '0f34c94687e90334e012f188531157bd291d6095'),
-    'lfpw': DatasetSource('lfpw', MENPO_CDN_URL + 'lfpw.tar.gz',
-                          '5859560f8fc7de412d44619aeaba1d1287e5ede6')
-}
+
+# on import convert the list of datasets into a dict for easy access. Use this
+# opportunity to verify the uniqueness of each dataset name.
+MANAGED_DATASETS = {}
+
+for dataset in _MANAGED_DATASET_LIST:
+    if dataset.name in MANAGED_DATASETS:
+        raise ValueError("Error - two managed datasets with name "
+                         "'{}'".format(dataset.name))
+    else:
+        MANAGED_DATASETS[dataset.name] = dataset
+
 
 
 # ----------- Cache path management ---------- #
@@ -27,7 +72,7 @@ def dataset_dir():
 
 @create_path
 def download_dataset_dir():
-    return resolve_cache_dir() / 'dlcache'
+    return dataset_dir() / 'dlcache'
 
 @create_path
 def unpacked_dataset_dir():
