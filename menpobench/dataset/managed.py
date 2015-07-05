@@ -2,8 +2,8 @@ from contextlib import contextmanager
 from collections import namedtuple
 import shutil
 
-from menpobench import CACHE_DIR
-from menpobench.utils import checksum, download_file, extract_tar
+from menpobench.config import resolve_cache_dir
+from menpobench.utils import checksum, download_file, extract_tar, create_path
 
 DatasetSource = namedtuple('DatasetSource', ['name', 'url', 'sha1'])
 
@@ -21,28 +21,27 @@ MANAGED_DATASETS = {
 
 # ----------- Cache path management ---------- #
 
-DATASET_DIR = CACHE_DIR / 'datasets'
-if not DATASET_DIR.is_dir():
-    DATASET_DIR.mkdir()
+@create_path
+def dataset_dir():
+    return resolve_cache_dir() / 'datasets'
 
-DOWNLOAD_DATASET_DIR = DATASET_DIR / 'dlcache'
-if not DOWNLOAD_DATASET_DIR.is_dir():
-    DOWNLOAD_DATASET_DIR.mkdir()
+@create_path
+def download_dataset_dir():
+    return resolve_cache_dir() / 'dlcache'
 
-
-UNPACKED_DATASET_DIR = DATASET_DIR / 'unpacked'
-if not UNPACKED_DATASET_DIR.is_dir():
-    UNPACKED_DATASET_DIR.mkdir()
+@create_path
+def unpacked_dataset_dir():
+    return dataset_dir() / 'unpacked'
 
 
 # ----------- tar handling ---------- #
 
 def database_tar_path(name):
-    return DOWNLOAD_DATASET_DIR / '{}.tar.gz'.format(name)
+    return download_dataset_dir() / '{}.tar.gz'.format(name)
 
 
 def dataset_path(name):
-    return UNPACKED_DATASET_DIR / name
+    return unpacked_dataset_dir() / name
 
 
 def checksum_of_dataset(name):
@@ -70,13 +69,13 @@ def download_dataset_if_needed(name, verbose=False):
             return
     else:
         if verbose:
-            print("'' is not cached - downloading...".format(name))
+            print("'{}' is not cached - downloading...".format(name))
         download_file(info.url, database_tar_path(name))
     download_dataset_if_needed(name, verbose=verbose)
 
 
 def unpack_dataset(name):
-    extract_tar(database_tar_path(name), UNPACKED_DATASET_DIR)
+    extract_tar(database_tar_path(name), unpacked_dataset_dir())
 
 
 def cleanup_unpacked_dataset_if_present(name):

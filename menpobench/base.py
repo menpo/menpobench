@@ -1,16 +1,13 @@
 from menpobench.dataset import retrieve_datasets
 from menpobench.method import retrieve_method, retrieve_untrainable_method
-from menpobench.utils import norm_path, load_module
-import yaml
-from pathlib import Path
+from menpobench.utils import load_yaml
 
 
 def invoke_benchmark(yaml_path):
     r"""
     Invoke a benchmark specified in a yaml file.
     """
-    with open(norm_path(yaml_path), 'rt') as f:
-        c = yaml.load(f)
+    c = load_yaml(yaml_path)
 
     for m in c['methods']:
         train = retrieve_method(m)

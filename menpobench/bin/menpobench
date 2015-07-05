@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
-from menpobench import invoke_benchmark
+from menpobench.cli import invoke_benchmark_from_cli
 
 
 if __name__ == "__main__":
@@ -12,8 +11,4 @@ if __name__ == "__main__":
         """)
     parser.add_argument("yaml_path", help="Path to a yaml configuration file")
     ns = parser.parse_args()
-    try:
-        invoke_benchmark(ns.yaml_path)
-    except ValueError as e:
-        print('ERROR: {}'.format(e.message))
-        exit(1)
+    invoke_benchmark_from_cli(ns.yaml_path)
