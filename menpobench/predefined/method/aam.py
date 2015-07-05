@@ -1,4 +1,4 @@
-from menpobench.dataset import menpo_preprocess
+from menpobench.preprocess import menpo_preprocess
 from menpofit.aam import AAMBuilder, LucasKanadeAAMFitter
 from menpo.feature import dsift
 from menpobench.method import MenpoFitterWrapper
