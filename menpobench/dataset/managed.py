@@ -114,7 +114,7 @@ def download_dataset_if_needed(name, verbose=False):
             return
     else:
         if verbose:
-            print("'{}' manged dataset is not cached - "
+            print("'{}' managed dataset is not cached - "
                   "downloading...".format(name))
         download_file(info.url, database_tar_path(name))
     download_dataset_if_needed(name, verbose=verbose)
