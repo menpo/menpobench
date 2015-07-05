@@ -5,6 +5,7 @@ import shutil
 import imp
 import os
 from pathlib import Path
+import yaml
 
 
 def checksum(filepath, blocksize=65536):
@@ -70,3 +71,30 @@ def norm_path(filepath):
     """
     return os.path.abspath(os.path.normpath(
         os.path.expandvars(os.path.expanduser(str(filepath)))))
+
+
+def load_yaml(filepath):
+    with open(norm_path(filepath), 'rt') as f:
+        y = yaml.load(f)
+    return y
+
+
+def save_yaml(obj, filepath):
+    with open(norm_path(filepath), 'wt') as f:
+        yaml.dump(obj, f)
+
+
+def create_path(f):
+    r"""Decorator for functions returning pathlib.Path objects.
+    Creates the path if it does not exist.
+    """
+
+    def wrapped(*args, **kwargs):
+        p = f(*args, **kwargs)
+        p = Path(norm_path(p))
+        if not p.is_dir():
+            print("Path '{}' does not exist - creating...".format(p))
+            p.mkdir()
+        return p
+
+    return wrapped

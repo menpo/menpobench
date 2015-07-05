@@ -1,7 +1,15 @@
 from menpobench.utils import load_module_with_error_messages
-from pathlib import Path
 from menpobench import predefined_dir
 from functools import partial
+
+
+class MenpoFitterWrapper(object):
+
+    def __init__(self, fitter):
+        self.fitter = fitter
+
+    def __call__(self, img):
+        return self.fitter.fit(img)
 
 
 def predefined_method_dir():
