@@ -1,14 +1,31 @@
 #!/usr/bin/env python
 # encoding: utf-8
+"""The Menpo Deformable Model benchmarking suite
+
+
+<experiment_config> can be either the name of a predefined experiment, or the
+path to a .yaml experiment configuration file.
+
+Usage:
+  menpobench <experiment_config>
+  menpobench --list
+  menpobench (-h | --help)
+  menpobench --version
+
+Options:
+  --list     List all available predefined datasets, methods, and experiments.
+  -h --help  Show this screen.
+  --version  Show version.
+"""
+import menpobench
 from menpobench.cli import invoke_benchmark_from_cli
+from docopt import docopt
 
 
-if __name__ == "__main__":
-    from argparse import ArgumentParser
-    parser = ArgumentParser(
-        description=r"""
-        The Menpo Deformable Model benchmarking suite
-        """)
-    parser.add_argument("yaml_path", help="Path to a yaml configuration file")
-    ns = parser.parse_args()
-    invoke_benchmark_from_cli(ns.yaml_path)
+if __name__ == '__main__':
+    args = docopt(__doc__,
+                  version='menpobench v{}'.format(menpobench.__version__))
+    if args['--list']:
+        print('return a list of all available config')
+    else:
+        invoke_benchmark_from_cli(args['<experiment_config>'])
