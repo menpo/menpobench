@@ -34,7 +34,7 @@ def copy_and_yield(fsrc, fdst, length=1024*1024):
 
 def download_file(url, dest_path):
     r"""
-    Download a file to a path
+    Download a file to a path, reporting the progress with a progress bar
     """
     req = urllib2.urlopen(url)
     n_bytes = int(req.headers['content-length'])
