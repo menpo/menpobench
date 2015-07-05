@@ -1,6 +1,7 @@
 from menpobench.utils import load_module_with_error_messages
 from menpobench import predefined_dir
 from functools import partial
+from menpobench.preprocess import menpo_preprocess
 
 
 class MenpoFitterWrapper(object):
@@ -8,13 +9,14 @@ class MenpoFitterWrapper(object):
     def __init__(self, fitter):
         self.fitter = fitter
 
-    def __call__(self, img):
-        # obtain ground truth (original) landmarks
-        gt_shape = img.landmarks['gt_shape'].lms
-
-        # fit image
-        return self.fitter.fit(img, gt_shape, gt_shape=gt_shape)
-
+    def __call__(self, img_generator):
+        results = []
+        for img in img_generator:
+            img = menpo_preprocess(img)
+            # obtain ground truth (original) landmarks
+            gt_shape = img.landmarks['gt_shape'].lms
+            results.append(self.fitter.fit(img, gt_shape, gt_shape=gt_shape))
+        return results
 
 def predefined_method_dir():
     return predefined_dir() / 'method'

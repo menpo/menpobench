@@ -1,5 +1,7 @@
 from menpobench.utils import load_module_with_error_messages
+from menpobench.preprocess import basic_preprocess
 from menpobench import predefined_dir
+
 from itertools import chain
 from functools import partial
 
@@ -17,7 +19,6 @@ load_module_for_dataset = partial(load_module_with_error_messages,
 
 
 def wrap_dataset_with_preprocessing_step(img_generator):
-    from .preprocess import basic_preprocess
     for img in img_generator():
         yield basic_preprocess(img)
 
@@ -37,9 +38,9 @@ from menpo.visualize.textutils import print_dynamic
 def print_processing_status(image_generator):
     i = 0
     for i, image in enumerate(image_generator, 1):
-        print_dynamic('Pre-processing image {}'.format(i))
+        print_dynamic('Processing image {}'.format(i))
         yield image
-    print_dynamic('{} images pre-processed.'.format(i))
+    print_dynamic('{} images processed.'.format(i))
     print('')
 
 
