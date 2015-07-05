@@ -1,11 +1,12 @@
 import hashlib
 import tarfile
 import urllib2
-import shutil
 import imp
 import os
 from pathlib import Path
 import yaml
+from math import ceil
+from menpo.visualize.textutils import print_progress, bytes_str
 
 
 def checksum(filepath, blocksize=65536):
@@ -21,13 +22,31 @@ def checksum(filepath, blocksize=65536):
     return sha.hexdigest()
 
 
+def copy_and_yield(fsrc, fdst, length=1024*1024):
+    """copy data from file-like object fsrc to file-like object fdst"""
+    while 1:
+        buf = fsrc.read(length)
+        if not buf:
+            break
+        fdst.write(buf)
+        yield
+
+
 def download_file(url, dest_path):
     r"""
     Download a file to a path
     """
     req = urllib2.urlopen(url)
+    n_bytes = int(req.headers['content-length'])
+    chunk_size_bytes = 512 * 1024
+    n_items = int(ceil((1.0 * n_bytes) / chunk_size_bytes))
+    prefix = 'Downloading {}'.format(bytes_str(n_bytes))
     with open(str(dest_path), 'wb') as fp:
-        shutil.copyfileobj(req, fp)
+        for _ in print_progress(copy_and_yield(req, fp,
+                                               length=chunk_size_bytes),
+                                n_items=n_items, show_count=False,
+                                prefix=prefix):
+            pass
     req.close()
 
 
