@@ -99,9 +99,9 @@ def download_dataset_if_needed(name, verbose=False):
             raise ValueError("'{}' is not a managed dataset".format(name))
     info = MANAGED_DATASETS[name]
     if database_tar_path(name).is_file():
-        if verbose:
-            print("'{}' is already cached - checking "
-                  "integrity...".format(name))
+        # if verbose:
+        #     print("'{}' is already cached - checking "
+        #           "integrity...".format(name))
         if checksum_of_dataset(name) != info.sha1:
             if verbose:
                 print("Warning: cached version of '{}' failed checksum - "
@@ -109,12 +109,13 @@ def download_dataset_if_needed(name, verbose=False):
             cleanup_dataset_tar(name)
             download_dataset_if_needed(name, verbose=verbose)
         else:
-            if verbose:
-                print("'{}' checksum validated".format(name))
+            # if verbose:
+            #     print("'{}' checksum validated".format(name))
             return
     else:
         if verbose:
-            print("'{}' is not cached - downloading...".format(name))
+            print("'{}' manged dataset is not cached - "
+                  "downloading...".format(name))
         download_file(info.url, database_tar_path(name))
     download_dataset_if_needed(name, verbose=verbose)
 
@@ -139,10 +140,10 @@ def managed_dataset(name, verbose=True):
     download_dataset_if_needed(name, verbose=verbose)
     cleanup_unpacked_dataset_if_present(name)
     if verbose:
-        print("unpacking cached '{}' for use".format(name))
+        print("Unpacking cached dataset '{}'".format(name))
     unpack_dataset(name)
-    if verbose:
-        print("'{}' is unpacked".format(name))
+    # if verbose:
+    #     print("'{}' is unpacked".format(name))
     try:
         yield dataset_path(name)
     finally:

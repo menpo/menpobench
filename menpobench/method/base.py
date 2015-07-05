@@ -9,7 +9,11 @@ class MenpoFitterWrapper(object):
         self.fitter = fitter
 
     def __call__(self, img):
-        return self.fitter.fit(img)
+        # obtain ground truth (original) landmarks
+        gt_shape = img.landmarks['gt_shape'].lms
+
+        # fit image
+        return self.fitter.fit(img, gt_shape, gt_shape=gt_shape)
 
 
 def predefined_method_dir():
