@@ -18,7 +18,7 @@ Options:
   --version  Show version.
 """
 import menpobench
-from menpobench.cli import invoke_benchmark_from_cli
+from menpobench.cli import invoke_benchmark_from_cli, list_all_predefined
 from docopt import docopt
 
 
@@ -26,6 +26,6 @@ if __name__ == '__main__':
     args = docopt(__doc__,
                   version='menpobench v{}'.format(menpobench.__version__))
     if args['--list']:
-        print('return a list of all available config')
+        list_all_predefined()
     else:
         invoke_benchmark_from_cli(args['<experiment_config>'])

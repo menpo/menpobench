@@ -35,6 +35,15 @@ def predefined_untrainable_method_path(name):
     return predefined_untrainable_method_dir() / '{}.py'.format(name)
 
 
+def list_predefined_methods():
+    return sorted([p.stem for p in predefined_method_dir().glob('*.py')])
+
+
+def list_predefined_untrainable_methods():
+    return sorted([p.stem for p in
+                   predefined_untrainable_method_dir().glob('*.py')])
+
+
 load_module_for_method = partial(load_module_with_error_messages,
                                  'method', predefined_method_path)
 
