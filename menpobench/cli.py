@@ -17,3 +17,16 @@ def invoke_benchmark_from_cli(experiment_name):
     except ValueError as e:
         print('ERROR: {}'.format(e.message))
         exit(1)
+
+
+def list_all_predefined():
+    from menpobench.experiment import list_predefined_experiments
+    from menpobench.dataset import list_predefined_datasets
+    from menpobench.method import (list_predefined_methods,
+                                   list_predefined_untrainable_methods)
+    import yaml
+    print(yaml.dump({'datasets': list_predefined_datasets(),
+                     'methods': list_predefined_methods(),
+                     'untrainable_methods': list_predefined_untrainable_methods(),
+                     'experiments': list_predefined_experiments()
+                     }, default_flow_style=False))

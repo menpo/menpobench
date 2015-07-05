@@ -14,6 +14,10 @@ def predefined_dataset_path(name):
     return predefined_dataset_dir() / '{}.py'.format(name)
 
 
+def list_predefined_datasets():
+    return sorted([p.stem for p in predefined_dataset_dir().glob('*.py')])
+
+
 load_module_for_dataset = partial(load_module_with_error_messages,
                                   'dataset', predefined_dataset_path)
 
