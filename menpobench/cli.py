@@ -2,9 +2,9 @@ from menpobench import invoke_benchmark, configure_cache_dir
 from menpobench.config import NoMenpoBenchConfigError
 
 
-def invoke_benchmark_from_cli(yaml_path):
+def invoke_benchmark_from_cli(experiment_name):
     try:
-        invoke_benchmark(yaml_path)
+        invoke_benchmark(experiment_name)
     except NoMenpoBenchConfigError:
         print('Welcome to menpobench. To start, you will need to choose a directory')
         print('that menpobench can use as a cache.')
@@ -13,7 +13,7 @@ def invoke_benchmark_from_cli(yaml_path):
         cache_dir = raw_input('Please enter cache directory: ')
         configure_cache_dir(cache_dir)
         # now we have a cache dir, re-run
-        invoke_benchmark_from_cli(yaml_path)
+        invoke_benchmark_from_cli(experiment_name)
     except ValueError as e:
         print('ERROR: {}'.format(e.message))
         exit(1)

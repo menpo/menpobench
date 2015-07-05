@@ -18,6 +18,7 @@ class MenpoFitterWrapper(object):
             results.append(self.fitter.fit(img, gt_shape, gt_shape=gt_shape))
         return results
 
+
 def predefined_method_dir():
     return predefined_dir() / 'method'
 
