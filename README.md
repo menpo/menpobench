@@ -145,8 +145,8 @@ training_data:
 testing_data:
     - lfpw_38_dlib_test
 methods:
-    - SDM
-    - AAM
+    - sdm
+    - aam
 untrainable_methods:
     - intraface
 ```
@@ -204,15 +204,16 @@ the results on your own machine.
 
 ## How do I know what keys are available?
 
-You can run `menpobench --all-opts` to output an exhaustive list of what keys
-are valid in what sections.
+You can run `menpobench --list` to output an exhaustive list of what predefined
+datasets, methods, and untrainable methods are provided in menpobench.
 
 ## How do I know what a key actually does?
 
-Keys that you can use in the schema simply map to python files in menpobench.
+Keys that you can use in the schema simply map to python files in the
+[predefined folder inside menpobench](https://github.com/menpo/menpobench/tree/master/menpobench/predefined).
 You can inspect these files to see exactly how a given part of menpobench is
-implemented. If you think we are doing something wrong, issue a PR and tell us
-about it.
+implemented. If you think we are doing something incorrectly or suboptimally,
+issue a PR and tell us about it.
 
 ## I want to test on a dataset or on a method that is not shipped as part of menpobench - how do I do that?
 
@@ -254,7 +255,8 @@ def generate_dataset():
         yield im
 ```
 
-If you saved this file as `./path/to/my_dataset.py`, you could use it for training in our previous example as
+If you saved this file as `./path/to/my_dataset.py`, you could use it for
+training in our previous example as
 
 ```yaml
 training_data:
@@ -264,8 +266,8 @@ training_data:
 testing_data:
     - lfpw_38_dlib_test
 methods:
-    - SDM
-    - AAM
+    - sdm
+    - aam
 untrainable_methods:
     - intraface
 ```
@@ -278,7 +280,7 @@ will first have to activate the environment before the tool is available, e.g.
 [2]: Of course, if the tool in question needs Matlab you'll need to have that
 on your system yourself.
 
-[3]: You'll notice that internal databases loading mechanisms have a little more
-boilerplate code at the top of the file in order to lazily load a
-menpobench-managed dataset (and to not have absolute paths), but they are in
-essence the same as the example shown here.
+[3]: You'll notice that predefined datasets have a quirky little context
+manager inside them in order to lazily load a menpobench-managed dataset
+(and to not have absolute paths), but they are in essence the same as the
+ example shown here.
