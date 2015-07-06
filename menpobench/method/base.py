@@ -1,7 +1,7 @@
-from menpobench.utils import load_module_with_error_messages
-from menpobench import predefined_dir
 from functools import partial
+from menpobench import predefined_dir
 from menpobench.preprocess import menpo_preprocess
+from menpobench.utils import load_module_with_error_messages
 
 
 class MenpoFitterWrapper(object):
