@@ -4,7 +4,7 @@ import versioneer
 import os
 
 install_requires = ['menpofit>=0.2,<0.3', 'pyyaml>=3.11,<4.0',
-                    'docopt>=0.6.0<0.7.0']
+                    'docopt>=0.6.0,<0.7.0']
 
 if sys.version_info.major == 2:
       install_requires.append('pathlib==1.0')
