@@ -1,8 +1,7 @@
 from contextlib import contextmanager
 import shutil
-
 from menpobench.config import resolve_cache_dir
-from menpobench.utils import checksum, download_file, extract_tar, create_path
+from menpobench.utils import checksum, create_path, download_file, extract_tar
 
 MENPO_CDN_URL = 'http://cdn.menpo.org.s3.amazonaws.com/'
 MENPO_CDN_DATASET_URL = MENPO_CDN_URL + 'datasets/'
@@ -20,7 +19,7 @@ class DatasetSource(object):
         return MENPO_CDN_DATASET_URL + '{}.tar.gz'.format(self.name)
 
 
-# ----------- manged datasets ---------- #
+# --------------------------- MANAGED DATASETS ------------------------------ #
 #
 # Managed datasets that menpobench is aware of. These datasets will be
 # downloaded from the Team Menpo CDN dynamically and used for evaluations.

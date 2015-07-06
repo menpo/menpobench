@@ -1,9 +1,9 @@
-from menpobench.utils import load_module_with_error_messages
-from menpobench.preprocess import basic_preprocess
-from menpobench import predefined_dir
-
 from itertools import chain
 from functools import partial
+from menpobench import predefined_dir
+from menpobench.preprocess import basic_preprocess
+from menpobench.utils import load_module_with_error_messages
+from menpo.visualize.textutils import print_dynamic
 
 
 def predefined_dataset_dir():
@@ -34,9 +34,6 @@ def retrieve_dataset(dataset_name):
     # pre-processing that we always perform per-image. Wrap the generator with
     # the basic pre-processing before we return it.
     return wrap_dataset_with_preprocessing_step(img_generator)
-
-
-from menpo.visualize.textutils import print_dynamic
 
 
 def print_processing_status(image_generator):
