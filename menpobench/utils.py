@@ -3,6 +3,7 @@ import tarfile
 import urllib2
 import imp
 import os
+import zipfile
 from pathlib import Path
 import yaml
 from math import ceil
@@ -56,6 +57,25 @@ def extract_tar(tar_path, dest_dir):
     """
     with tarfile.open(str(tar_path)) as tar:
         tar.extractall(path=str(dest_dir))
+
+
+def extract_zip(zip_path, dest_dir):
+    r"""
+    Extract a zip file to a destination
+    """
+    with zipfile.open(str(zip_path)) as z:
+        z.extractall(path=str(dest_dir))
+
+
+def extract_archive(path, dest_dir):
+    r"""
+    Extract a given archive file to a destination. Currently supports .zip
+    and .tar.gz
+    """
+    if path.suffix == '.zip':
+        return extract_zip(path, dest_dir)
+    elif ''.join(path.suffixes) == '.tar.gz':
+        return extract_tar(path, dest_dir)
 
 
 def load_module(path):
