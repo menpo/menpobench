@@ -89,27 +89,33 @@ def get_asset(name, asset_set):
         return asset_set[name]
 
 
-def download_asset_if_needed(asset, verbose=False):
+def download_asset_if_needed(asset, verbose=False, checksum_fail=False):
     if asset.archive_path().is_file():
-        # if verbose:
-        #     print("'{}' is already cached - checking "
-        #           "integrity...".format(name))
         if not asset.validate_archive_checksum():
             if verbose:
                 print("Warning: cached version of '{}' failed checksum - "
                       "clearing cache".format(asset.name))
+
+            actual_checksum = asset.archive_checksum()
             asset.cleanup_archive()
-            download_asset_if_needed(asset, verbose=verbose)
+
+            if not checksum_fail:
+                download_asset_if_needed(asset, verbose=verbose,
+                                         checksum_fail=True)
+            else:
+                raise ValueError('Unable to download asset - checksum does '
+                                 'not match expected: {} != {} '
+                                 '(actual != expected)'.format(actual_checksum,
+                                                               asset.sha1))
         else:
-            # if verbose:
-            #     print("'{}' checksum validated".format(name))
             return
     else:
         if verbose:
-            print("'{}' managed dataset is not cached - "
+            print("'{}' managed asset is not cached - "
                   "downloading...".format(asset.name))
         download_file(asset.url, asset.archive_path())
-    download_asset_if_needed(asset, verbose=verbose)
+    download_asset_if_needed(asset, verbose=verbose,
+                             checksum_fail=checksum_fail)
 
 
 @contextmanager
@@ -118,7 +124,8 @@ def managed_asset(asset_set, name, verbose=True, cleanup=True):
     # Ensure the asset in question is cached locally
     download_asset_if_needed(asset, verbose=verbose)
     if verbose:
-        print("Unpacking cached asset '{}'".format(name))
+        print("Unpacking cached asset '{}' to {}".format(name,
+                                                         asset.unpacked_path()))
     asset.unpack()
     try:
         yield asset.unpacked_path()
