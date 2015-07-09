@@ -37,7 +37,7 @@ class CDNDatasetSource(DatasetSource):
         super(CDNDatasetSource, self).__init__(name, url, sha1)
 
 
-# ----------- Managed Datasets ---------- #
+# --------------------------- MANAGED DATASETS ------------------------------ #
 #
 # Managed datasets that menpobench is aware of. These datasets will ideally be
 # downloaded from the Team Menpo CDN dynamically and used for evaluations.
@@ -84,3 +84,4 @@ for dataset in _MANAGED_DATASET_LIST:
 # ----------- Magic dataset contextmanager ---------- #
 
 managed_dataset = partial(managed_asset, MANAGED_DATASETS, cleanup=True)
+
