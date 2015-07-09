@@ -11,11 +11,11 @@ class MenpoFitterWrapper(object):
 
     def __call__(self, img_generator):
         results = []
-        for img in img_generator:
-            img = menpo_preprocess(img)
-            # obtain ground truth (original) landmarks
-            gt_shape = img.landmarks['gt_shape'].lms
-            results.append(self.fitter.fit(img, gt_shape, gt_shape=gt_shape))
+        # for img in img_generator:
+        #     img = menpo_preprocess(img)
+        #     # obtain ground truth (original) landmarks
+        #     gt_shape = img.landmarks['gt_shape'].lms
+        #     results.append(self.fitter.fit(img, gt_shape, gt_shape=gt_shape))
         return results
 
 

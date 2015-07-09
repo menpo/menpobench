@@ -19,11 +19,6 @@ def download_dataset_dir():
     return dataset_dir() / 'dlcache'
 
 
-@create_path
-def unpacked_dataset_dir():
-    return dataset_dir() / 'unpacked'
-
-
 # ----------- DatasetSource Classes ---------- #
 
 class DatasetSource(WebSource):
@@ -33,9 +28,6 @@ class DatasetSource(WebSource):
 
     def _download_cache_dir(self):
         return download_dataset_dir()
-
-    def _unpacked_cache_dir(self):
-        return unpacked_dataset_dir()
 
 
 class CDNDatasetSource(DatasetSource):
@@ -91,4 +83,4 @@ for dataset in _MANAGED_DATASET_LIST:
 
 # ----------- Magic dataset contextmanager ---------- #
 
-managed_dataset = partial(managed_asset, MANAGED_DATASETS)
+managed_dataset = partial(managed_asset, MANAGED_DATASETS, cleanup=True)

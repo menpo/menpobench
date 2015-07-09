@@ -19,11 +19,6 @@ def download_methods_dir():
     return methods_dir() / 'dlcache'
 
 
-@create_path
-def unpacked_methods_dir():
-    return methods_dir() / 'unpacked'
-
-
 # ----------- MethodSource Classes ---------- #
 
 class MethodSource(WebSource):
@@ -33,9 +28,6 @@ class MethodSource(WebSource):
 
     def _download_cache_dir(self):
         return download_methods_dir()
-
-    def _unpacked_cache_dir(self):
-        return unpacked_methods_dir()
 
 
 class CDNMethodsSource(MethodSource):
