@@ -65,7 +65,7 @@ def extract_zip(zip_path, dest_dir):
     r"""
     Extract a zip file to a destination
     """
-    with zipfile.open(str(zip_path)) as z:
+    with zipfile.PyZipFile(str(zip_path)) as z:
         z.extractall(path=str(dest_dir))
 
 
