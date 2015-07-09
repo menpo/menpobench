@@ -6,7 +6,8 @@ try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
-from menpobench.utils import extract_archive, checksum, download_file
+from menpobench.utils import extract_archive, checksum, download_file, \
+    TempDirectory
 
 
 # Global url for the current Menpo CDN for storing assets - datasets and
@@ -21,12 +22,15 @@ class AssetSource(object):
     def __init__(self, name):
         super(AssetSource, self).__init__()
         self.name = name
+        self._unpacked_temp_dir = None
 
     def _download_cache_dir(self):
         raise NotImplementedError()
 
     def _unpacked_cache_dir(self):
-        raise NotImplementedError()
+        if self._unpacked_temp_dir is None:
+            self._unpacked_temp_dir = TempDirectory.create_new()
+        return self._unpacked_temp_dir
 
     def unpacked_path(self):
         return self._unpacked_cache_dir() / self.name
@@ -109,15 +113,15 @@ def download_asset_if_needed(asset, verbose=False):
 
 
 @contextmanager
-def managed_asset(asset_set, name, verbose=True):
+def managed_asset(asset_set, name, verbose=True, cleanup=True):
     asset = get_asset(name, asset_set)
     # Ensure the asset in question is cached locally
     download_asset_if_needed(asset, verbose=verbose)
-    asset.cleanup_unpacked_data_if_present()
     if verbose:
         print("Unpacking cached asset '{}'".format(name))
     asset.unpack()
     try:
         yield asset.unpacked_path()
     finally:
-        asset.cleanup_unpacked_data_if_present()
+        if cleanup:
+            asset.cleanup_unpacked_data_if_present()

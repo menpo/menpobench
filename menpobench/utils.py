@@ -1,5 +1,7 @@
 import hashlib
 import tarfile
+import tempfile
+import shutil
 import urllib2
 import imp
 import os
@@ -139,3 +141,35 @@ def create_path(f):
         return p
 
     return wrapped
+
+
+# A Singleton pattern for supplying temporary directories and having a single
+# point of call for cleaning all the temporary directories up.
+# Works in Python 2 & 3
+class _Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(_Singleton, cls).__call__(*args,
+                                                                  **kwargs)
+        return cls._instances[cls]
+
+
+class Singleton(_Singleton('SingletonMeta', (object,), {})):
+    pass
+
+
+class TempDirectory(Singleton):
+    _directories = []
+
+    @classmethod
+    def create_new(cls):
+        d = Path(tempfile.mkdtemp())
+        cls._directories.append(d)
+        return d
+
+    @classmethod
+    def delete_all(cls):
+        for d in cls._directories:
+            shutil.rmtree(str(d), ignore_errors=True)
