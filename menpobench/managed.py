@@ -66,7 +66,10 @@ class WebSource(AssetSource):
         return self.archive_checksum() == self.sha1
 
     def unpack(self):
-        extract_archive(self.archive_path(), self._unpacked_cache_dir())
+        # Extracts the archive into the unpacked path - the unpacked
+        # path will then point to the folder and whatever is inside the archive
+        # is actually completely contained inside self.unpacked_path()
+        extract_archive(self.archive_path(), self.unpacked_path())
 
 
 class LocalSource(AssetSource):
@@ -76,9 +79,11 @@ class LocalSource(AssetSource):
         self.local_path = local_path
 
     def unpack(self):
-        folder_name = self.local_path.name
+        # Copies the folder into the unpacked dir - the output folder cannot
+        # exist before copying begins as it will be completely overwritten by
+        # the copy.
         shutil.copytree(self.local_path,
-                        self._unpacked_cache_dir() / folder_name,
+                        self.unpacked_path(),
                         symlinks=True)
 
 

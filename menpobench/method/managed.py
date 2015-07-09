@@ -1,8 +1,7 @@
 from functools import partial
 from menpobench.config import resolve_cache_dir
 from menpobench.managed import WebSource, MENPO_CDN_URL, managed_asset
-from menpobench.utils import create_path
-
+from menpobench.utils import create_path, extract_archive
 
 MENPO_CDN_METHODS_URL = MENPO_CDN_URL + 'methods/'
 
@@ -35,6 +34,13 @@ class CDNMethodsSource(MethodSource):
     def __init__(self, name, sha1):
         url = MENPO_CDN_METHODS_URL + '{}.tar.gz'.format(name)
         super(CDNMethodsSource, self).__init__(name, url, sha1)
+
+    def unpack(self):
+        # Extracts the archive into the unpacked dir - the unpacked
+        # path will then point to the folder because it is ASSUMED that the
+        # archive name matches the name of the asset and therefore the asset
+        # is actually completely contained inside self.unpacked_path()
+        extract_archive(self.archive_path(), self._unpacked_cache_dir())
 
 
 # ----------- Managed Methods ---------- #
