@@ -8,7 +8,7 @@ import os
 import zipfile
 from pathlib import Path
 import yaml
-from math import ceil
+from math import ceil, floor
 from menpo.visualize.textutils import print_progress, bytes_str
 
 
@@ -143,6 +143,24 @@ def create_path(f):
     return wrapped
 
 
+def centre_str(s, c=' ', width=80):
+    r"""Pad a string out to a certain width with a padding character 'c' placed
+    either side of the string, centring it.
+    """
+    if len(s) > (width - 4):
+        return s
+    remaining = width - len(s) - 2  # whitespace padding
+    if remaining % 2 == 0:
+        # remaining space evenly divides!
+        padding = remaining / 2
+        return c * padding + ' ' + s + ' ' + c * padding
+    else:
+        # gah, will have to be a different amount left and right
+        # remaining space evenly divides!
+        padding = int(floor((remaining * 1.0) / 2))
+        return c * (padding + 1) + ' ' + s + ' ' + c * padding
+
+
 # A Singleton pattern for supplying temporary directories and having a single
 # point of call for cleaning all the temporary directories up.
 # Works in Python 2 & 3
@@ -173,3 +191,4 @@ class TempDirectory(Singleton):
     def delete_all(cls):
         for d in cls._directories:
             shutil.rmtree(str(d), ignore_errors=True)
+
