@@ -72,7 +72,7 @@ class CDNMethodsSource(MethodSource):
 _MANAGED_METHODS_LIST = [
     MethodSource('yzt_iccv_2013',
                  'http://uk.mathworks.com/matlabcentral/fileexchange/downloads/19680/akamai/tzimiro_ICCV2013_code.zip',
-                 '29bc28a684c25c4f008d79b35543ba04')
+                 'a68fb313a06468d5256b7c95437c016914753a5a')
 ]
 
 
