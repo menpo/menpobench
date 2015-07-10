@@ -19,14 +19,14 @@ Options:
 """
 import menpobench
 from menpobench import invoke_benchmark, configure_cache_dir
-from menpobench.config import NoMenpoBenchConfigError
+from menpobench.config import NoMenpoBenchCacheConfigError
 from docopt import docopt
 
 
 def invoke_benchmark_with_cache_config_prompt(experiment_name):
     try:
         invoke_benchmark(experiment_name)
-    except NoMenpoBenchConfigError:
+    except NoMenpoBenchCacheConfigError:
         print('Welcome to menpobench. To start, you will need to choose a directory')
         print('that menpobench can use as a cache.')
         print('This directory will be managed by menpobench to store datasets and')

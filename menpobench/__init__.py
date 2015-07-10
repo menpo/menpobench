@@ -8,7 +8,7 @@ def configure_cache_dir(cache_dir):
     methods. datasets are generally large, so you will want to choose a
     directory on a volume with a fairly large capacity (we recommend 20GB+).
 
-    Your preference will be saved at '~/menpobenchrc', and used for future
+    Your preference will be saved at '~/.menpobenchrc', and used for future
     uses of menpobench.
     """
     from menpobench.config import save_custom_config
