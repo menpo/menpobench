@@ -1,9 +1,10 @@
 from pathlib import Path
 import os
+import platform
 from menpobench.utils import create_path
 
 
-class NoMenpoBenchConfigError(Exception):
+class NoMenpoBenchCacheConfigError(Exception):
     pass
 
 
@@ -34,9 +35,9 @@ def resolve_cache_dir(verbose=False):
     elif default_config.is_file():
         config_path = default_config
     else:
-        raise NoMenpoBenchConfigError('To use menpobench, a cache directory '
-                                      'needs to be configured. see '
-                                      'menpobench.configure_cache_dir()')
+        # To use menpobench, a cache directory needs to be configured.
+        # See menpobench.configure_cache_dir()
+        raise NoMenpoBenchCacheConfigError()
     cache_dir = Path(load_yaml(config_path)['cache_dir'])
     if verbose:
         print('cache dir: {}{}'.format(cache_dir, msg))
@@ -54,3 +55,15 @@ def clear_custom_config():
     p = custom_config_path()
     if p.is_file():
         p.unlink()
+
+
+def is_windows():
+    return 'windows' in platform.system().lower()
+
+
+def is_osx():
+    return 'darwin' in platform.system().lower()
+
+
+def is_linux():
+    return 'linux' in platform.system().lower()
