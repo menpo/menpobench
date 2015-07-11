@@ -1,4 +1,5 @@
 import hashlib
+import subprocess
 import tarfile
 import tempfile
 import shutil
@@ -86,6 +87,11 @@ def load_module(path):
     """
     name = path.stem
     return imp.load_source(name, str(path))
+
+
+def invoke_process(command_list):
+    print(' '.join(command_list))
+    subprocess.check_call(command_list)
 
 
 def load_module_with_error_messages(module_type, predefined_f, name):
