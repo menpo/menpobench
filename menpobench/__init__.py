@@ -15,6 +15,16 @@ def configure_cache_dir(cache_dir):
     save_custom_config({'cache_dir': cache_dir})
 
 
+def configure_matlab_bin_path(matlab_bin_path):
+    r"""Setup menpobench by configuring the path to the Matlab executable.
+
+    Your preference will be saved at '~/.menpobenchrc', and used for future
+    uses of menpobench.
+    """
+    from menpobench.config import save_custom_config
+    save_custom_config({'matlab_bin_path': matlab_bin_path})
+
+
 def menpobench_dir():
     r"""The path to the top of the menpobench Python package.
 
