@@ -1,4 +1,27 @@
-function model_data = menpobench_train(training_images_path)
+function funcs = menpobench_namespace()
+    % Use a struct in matlab to simulate a Python namespace
+    funcs.train = @train;
+    funcs.setup = @setup;
+    funcs.fit = @fit;
+end
+
+%% Fill in the functions below. These functions are then wired up into a struct
+%  above to simulate a Python namespace. There are three functions to specify:
+%    1. model_data = train(training_images_path)
+%       This function is used to train the method. It should drop out a single
+%       variable of any type (model_data), which can be any valid Matlab
+%       type. This will be loaded using the 'setup' function and then passed
+%       into the 'fit' function for generating the results.
+%    2. model_data = setup()
+%       This function is used to load the model data or setup any other
+%       requirements for the 'fit' method. It will be called before
+%       'fit' is called over each image in the test set.
+%    3. result = fit(image_data, bbox, model_data)
+%       Fit the given image from the given bounding box. The model data is
+%       also provided to the fit method.
+
+%% Train
+function model_data = train(training_images_path)
     %MENPOBENCH_TRAIN Summary of this function goes here
     %   Detailed explanation goes here
 
@@ -56,4 +79,14 @@ function model_data = menpobench_train(training_images_path)
     
     %% Return AAM as model data
     model_data = cAAM;
+end
+
+%% Setup
+function model_data = setup(method_path)
+    model_data = load(fullfile(method_path, 'model.mat'));
+end
+
+%% Fit
+function result = fit(image_data, bbox, model_data)
+    result = [];
 end
