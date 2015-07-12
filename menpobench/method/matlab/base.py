@@ -85,6 +85,13 @@ def resolve_matlab_bin_path(verbose=False):
     return _matlab_bin_path
 
 
+def invoke_matlab(command):
+    matlab_bin_path = resolve_matlab_bin_path()
+    invoke_process(['{}'.format(matlab_bin_path),
+                    '-nosplash', '-nodesktop', '-nojvm', '-r',
+                    '{}'.format(command)])
+
+
 class MatlabWrapper(object):
 
     def __init__(self, fitter):
@@ -95,21 +102,14 @@ class MatlabWrapper(object):
         return results
 
 
-def invoke_matlab(command):
-    matlab_bin_path = resolve_matlab_bin_path()
-    invoke_process(['{}'.format(matlab_bin_path),
-                    '-nosplash', '-nodesktop', '-nojvm', '-r',
-                    '{}'.format(command)])
-
-
 def train_matlab_method(method_path, matlab_train_filename,
                         training_images_path):
     # Get absolute path to the train method and copy across to the method
     # folder
     matlab_train_path = predefined_method_dir() / matlab_train_filename
     shutil.copyfile(str(matlab_train_path),
-                    str(method_path / 'menpobench_train.m'))
+                    str(method_path / 'menpobench_namespace.m'))
 
     # Call matlab bridge to train file - will drop out a model file
-    invoke_matlab("addpath('{}'); menpobench_matlab_bridge('{}', '{}');".format(
+    invoke_matlab("addpath('{}'); menpobench_matlab_train('{}', '{}');".format(
         matlab_functions_dir(), method_path, training_images_path))
