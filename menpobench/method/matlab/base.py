@@ -1,11 +1,13 @@
 from subprocess import CalledProcessError
 from pathlib import Path
 import shutil
+from scipy.io import loadmat
 from menpobench import configure_matlab_bin_path
 from menpobench.config import (is_linux, is_osx, is_windows,
                                resolve_config_path)
-from menpobench.method.base import predefined_method_dir, matlab_functions_dir
-from menpobench.utils import invoke_process
+from menpobench.method.base import predefined_method_dir, matlab_functions_dir, \
+    save_images_to_dir, save_landmarks_to_dir, images_to_mat
+from menpobench.utils import invoke_process, TempDirectory
 
 _POTENTIAL_RELEASES = ['2015a', '2014b', '2014a', '2013b', '2013a', '2012b',
                        '2012a']
@@ -92,14 +94,25 @@ def invoke_matlab(command):
                     '{}'.format(command)])
 
 
+def load_matlab_results(results_path):
+    return loadmat(str(results_path / 'menpobench_test_results.mat'))
+
+
 class MatlabWrapper(object):
 
-    def __init__(self, fitter):
-        self.fitter = fitter
+    def __init__(self, method_path):
+        self.method_path = method_path
 
     def __call__(self, img_generator):
-        results = []
-        return results
+        test_path = TempDirectory.create_new() / 'menpobench_test_images'
+        # Save images down to mat file
+        images_to_mat(img_generator, test_path)
+
+        # Call matlab bridge to test file - will drop out a result mat
+        invoke_matlab("addpath('{}'); menpobench_matlab_fit('{}', '{}');".format(
+            matlab_functions_dir(), self.method_path, test_path))
+        
+        return load_matlab_results(test_path)
 
 
 def train_matlab_method(method_path, matlab_train_filename,
