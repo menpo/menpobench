@@ -1,6 +1,10 @@
 import os
+import numpy as np
 from functools import partial
 from pathlib import Path
+from scipy.io import savemat
+import menpo.io as mio
+from menpo.visualize import print_progress
 from menpobench import predefined_dir
 from menpobench.preprocess import menpo_preprocess
 from menpobench.utils import load_module_with_error_messages
@@ -19,6 +23,42 @@ class MenpoFitterWrapper(object):
             gt_shape = img.landmarks['gt_shape'].lms
             results.append(self.fitter.fit(img, gt_shape, gt_shape=gt_shape))
         return results
+
+
+def save_images_to_dir(images, out_path, output_ext='.jpg'):
+    if not out_path.exists():
+        out_path.mkdir()
+    for k, im in enumerate(print_progress(images,
+                                          prefix='Saving images to disk')):
+        mio.export_image(im, out_path / '{}{}'.format(k, output_ext))
+
+
+def save_landmarks_to_dir(images, label, out_path, output_ext='.pts'):
+    if not out_path.exists():
+        out_path.mkdir()
+    for k, im in enumerate(print_progress(images,
+                                          prefix='Saving landmarks to disk')):
+        mio.export_landmark_file(im.landmarks[label],
+                                 out_path / '{}{}'.format(k, output_ext))
+
+
+def images_to_mat(images, out_path, attach_ground_truth=False):
+    as_fortran = np.asfortranarray
+
+    image_dicts = []
+    for im in images:
+        # TODO: Use bbox not gt_shape
+        i_dict = {'pixels': as_fortran(im.rolled_channels()),
+                  'bbox': as_fortran(im.landmarks['gt_shape'].lms.points)}
+        if attach_ground_truth:
+            i_dict['gt_shape'] = as_fortran(im.landmarks['gt_shape'].lms.points)
+        image_dicts.append(i_dict)
+
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
+    mat_out_path = out_path / 'menpobench_images.mat'
+    print('Serializing image data to Matlab file: {}'.format(mat_out_path))
+    savemat(str(mat_out_path), {'menpobench_images': image_dicts})
 
 
 def predefined_method_dir():
