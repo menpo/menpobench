@@ -6,8 +6,9 @@ from scipy.io import loadmat
 from menpobench import configure_matlab_bin_path
 from menpobench.config import (is_linux, is_osx, is_windows,
                                resolve_config_path)
-from menpobench.method.base import predefined_method_dir, save_images_to_dir, save_landmarks_to_dir, images_to_mat
+from menpobench.method.base import predefined_method_dir, images_to_mat
 from menpobench.utils import invoke_process, TempDirectory
+
 
 _POTENTIAL_RELEASES = ['2015a', '2014b', '2014a', '2013b', '2013a', '2012b',
                        '2012a']
@@ -21,7 +22,7 @@ _matlab_bin_path = None
 
 
 def matlab_functions_dir():
-    return Path(os.path.abspath(__file__)).parent / 'matlab'
+    return Path(os.path.abspath(__file__)).parent
 
 
 def _which_matlab():
