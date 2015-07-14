@@ -102,7 +102,3 @@ def retrieve_method(name):
 def retrieve_untrainable_method(name):
     module = load_module_for_untrainable_method(name)
     return getattr(module, 'test')
-
-
-def matlab_functions_dir():
-    return Path(os.path.abspath(__file__)).parent / 'matlab'
