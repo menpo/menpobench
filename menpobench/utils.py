@@ -90,7 +90,6 @@ def load_module(path):
 
 
 def invoke_process(command_list):
-    print(' '.join(command_list))
     subprocess.check_call(command_list)
 
 
