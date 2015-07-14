@@ -53,4 +53,3 @@ def invoke_benchmark(experiment_name):
                 results = test(testing_generator)
     finally:
         TempDirectory.delete_all()
-

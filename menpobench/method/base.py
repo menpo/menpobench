@@ -1,7 +1,5 @@
-import os
 import numpy as np
 from functools import partial
-from pathlib import Path
 from scipy.io import savemat
 import menpo.io as mio
 from menpo.visualize import print_progress
