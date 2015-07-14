@@ -7,5 +7,6 @@ def generate_dataset():
         for path in (lfpw_path / 'trainset').glob('*.png'):
             img = mio.import_image(path, normalise=False)
             img.landmarks['gt'] = img.landmarks['PTS']
+            img.landmarks['bbox'] = img.landmarks['PTS'].lms.bounding_box()
             del img.landmarks['PTS']
             yield img
