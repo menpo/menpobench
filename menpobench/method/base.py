@@ -45,9 +45,9 @@ def images_to_mat(images, out_path, attach_ground_truth=False):
 
     image_dicts = []
     for im in images:
-        # TODO: Use bbox not gt_shape
+        bbox = im.landmarks['bbox'].lms.bounds()
         i_dict = {'pixels': as_fortran(im.rolled_channels()),
-                  'bbox': as_fortran(im.landmarks['gt_shape'].lms.points)}
+                  'bbox': as_fortran(np.array(bbox).ravel())}
         if attach_ground_truth:
             i_dict['gt_shape'] = as_fortran(im.landmarks['gt_shape'].lms.points)
         image_dicts.append(i_dict)
