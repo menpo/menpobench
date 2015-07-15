@@ -1,36 +1,60 @@
-from contextlib import contextmanager
-import shutil
+from functools import partial
 from menpobench.config import resolve_cache_dir
-from menpobench.utils import checksum, create_path, download_file, extract_tar
+from menpobench.managed import WebSource, MENPO_CDN_URL, managed_asset
+from menpobench.utils import create_path, extract_archive
 
-MENPO_CDN_URL = 'http://cdn.menpo.org.s3.amazonaws.com/'
 MENPO_CDN_DATASET_URL = MENPO_CDN_URL + 'datasets/'
 
 
-class DatasetSource(object):
+# ----------- Cache path management ---------- #
+
+@create_path
+def dataset_dir():
+    return resolve_cache_dir() / 'datasets'
+
+
+@create_path
+def download_dataset_dir():
+    return dataset_dir() / 'dlcache'
+
+
+# ----------- DatasetSource Classes ---------- #
+
+class DatasetSource(WebSource):
+
+    def __init__(self, name, url, sha1):
+        super(DatasetSource, self).__init__(name, url, sha1)
+
+    def _download_cache_dir(self):
+        return download_dataset_dir()
+
+
+class CDNDatasetSource(DatasetSource):
 
     def __init__(self, name, sha1):
-        self.name = name
-        self.sha1 = sha1
+        url = MENPO_CDN_DATASET_URL + '{}.tar.gz'.format(name)
+        super(CDNDatasetSource, self).__init__(name, url, sha1)
 
-
-    @property
-    def url(self):
-        return MENPO_CDN_DATASET_URL + '{}.tar.gz'.format(self.name)
+    def unpack(self):
+        # Extracts the archive into the unpacked dir - the unpacked
+        # path will then point to the folder because it is ASSUMED that the
+        # archive name matches the name of the asset and therefore the asset
+        # is actually completely contained inside self.unpacked_path()
+        extract_archive(self.archive_path(), self._unpacked_cache_dir())
 
 
 # --------------------------- MANAGED DATASETS ------------------------------ #
 #
-# Managed datasets that menpobench is aware of. These datasets will be
+# Managed datasets that menpobench is aware of. These datasets will ideally be
 # downloaded from the Team Menpo CDN dynamically and used for evaluations.
 #
-# To prepare a dataset for inclusion in menpobench:
+# To prepare a dataset for inclusion in menpobench via the CDN:
 #
 # 1. Prepare the folder for the dataset on disk as normal. Ensure only
 #    pertinent files are in the dataset folder. The name of the entire dataset
 #    folder should follow Python variable naming conventions - lower case words
-#    seperated by underscores (e.g. `./dataset_name/`). Note that this name
-#    needs to be unique among all manged datasets.
+#    separated by underscores (e.g. `./dataset_name/`). Note that this name
+#    needs to be unique among all managed datasets.
 #
 # 2. tar.gz the entire folder:
 #      > tar -zcvf dataset_name.tar.gz ./dataset_name/
@@ -41,16 +65,17 @@ class DatasetSource(object):
 # 4. Upload the dataset archive to the Team Menpo CDN contact github/jabooth
 #    for details)
 #
-# 5. Add the dataset source to the _MANGED_DATASET_LIST below.
+# 5. Add the dataset source to the _MANAGED_DATASET_LIST below as a
+#    CDNDatasetSource.
 #
 #
 _MANAGED_DATASET_LIST = [
-    DatasetSource('lfpw_micro', '0f34c94687e90334e012f188531157bd291d6095'),
-    DatasetSource('lfpw', '5859560f8fc7de412d44619aeaba1d1287e5ede6')
+    CDNDatasetSource('lfpw_micro', '0f34c94687e90334e012f188531157bd291d6095'),
+    CDNDatasetSource('lfpw', '5859560f8fc7de412d44619aeaba1d1287e5ede6')
 ]
 
 
-# on import convert the list of datasets into a dict for easy access. Use this
+# On import convert the list of datasets into a dict for easy access. Use this
 # opportunity to verify the uniqueness of each dataset name.
 MANAGED_DATASETS = {}
 
@@ -62,88 +87,7 @@ for dataset in _MANAGED_DATASET_LIST:
         MANAGED_DATASETS[dataset.name] = dataset
 
 
+# ----------- Magic dataset contextmanager ---------- #
 
-# ----------- Cache path management ---------- #
+managed_dataset = partial(managed_asset, MANAGED_DATASETS, cleanup=True)
 
-@create_path
-def dataset_dir():
-    return resolve_cache_dir() / 'datasets'
-
-@create_path
-def download_dataset_dir():
-    return dataset_dir() / 'dlcache'
-
-@create_path
-def unpacked_dataset_dir():
-    return dataset_dir() / 'unpacked'
-
-
-# ----------- tar handling ---------- #
-
-def database_tar_path(name):
-    return download_dataset_dir() / '{}.tar.gz'.format(name)
-
-
-def dataset_path(name):
-    return unpacked_dataset_dir() / name
-
-
-def checksum_of_dataset(name):
-    return checksum(database_tar_path(name))
-
-
-def download_dataset_if_needed(name, verbose=False):
-    if name not in MANAGED_DATASETS:
-        if verbose:
-            raise ValueError("'{}' is not a managed dataset".format(name))
-    info = MANAGED_DATASETS[name]
-    if database_tar_path(name).is_file():
-        # if verbose:
-        #     print("'{}' is already cached - checking "
-        #           "integrity...".format(name))
-        if checksum_of_dataset(name) != info.sha1:
-            if verbose:
-                print("Warning: cached version of '{}' failed checksum - "
-                      "clearing cache".format(name))
-            cleanup_dataset_tar(name)
-            download_dataset_if_needed(name, verbose=verbose)
-        else:
-            # if verbose:
-            #     print("'{}' checksum validated".format(name))
-            return
-    else:
-        if verbose:
-            print("'{}' managed dataset is not cached - "
-                  "downloading...".format(name))
-        download_file(info.url, database_tar_path(name))
-    download_dataset_if_needed(name, verbose=verbose)
-
-
-def unpack_dataset(name):
-    extract_tar(database_tar_path(name), unpacked_dataset_dir())
-
-
-def cleanup_unpacked_dataset_if_present(name):
-    dset_path = dataset_path(name)
-    if dset_path.is_dir():
-        shutil.rmtree(str(dset_path))
-
-
-def cleanup_dataset_tar(name):
-    database_tar_path(name).unlink()
-
-
-@contextmanager
-def managed_dataset(name, verbose=True):
-    # Ensure the dataset in question is cached locally
-    download_dataset_if_needed(name, verbose=verbose)
-    cleanup_unpacked_dataset_if_present(name)
-    if verbose:
-        print("Unpacking cached dataset '{}'".format(name))
-    unpack_dataset(name)
-    # if verbose:
-    #     print("'{}' is unpacked".format(name))
-    try:
-        yield dataset_path(name)
-    finally:
-        cleanup_unpacked_dataset_if_present(name)

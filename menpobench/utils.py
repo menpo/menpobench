@@ -1,8 +1,12 @@
 import hashlib
+import subprocess
 import tarfile
+import tempfile
+import shutil
 import urllib2
 import imp
 import os
+import zipfile
 from pathlib import Path
 import yaml
 from math import ceil, floor
@@ -58,12 +62,35 @@ def extract_tar(tar_path, dest_dir):
         tar.extractall(path=str(dest_dir))
 
 
+def extract_zip(zip_path, dest_dir):
+    r"""
+    Extract a zip file to a destination
+    """
+    with zipfile.PyZipFile(str(zip_path)) as z:
+        z.extractall(path=str(dest_dir))
+
+
+def extract_archive(path, dest_dir):
+    r"""
+    Extract a given archive file to a destination. Currently supports .zip
+    and .tar.gz
+    """
+    if path.suffix == '.zip':
+        return extract_zip(path, dest_dir)
+    elif ''.join(path.suffixes) == '.tar.gz':
+        return extract_tar(path, dest_dir)
+
+
 def load_module(path):
     r"""
     Dynamically load a Python module at a given path
     """
     name = path.stem
     return imp.load_source(name, str(path))
+
+
+def invoke_process(command_list):
+    subprocess.check_call(command_list)
 
 
 def load_module_with_error_messages(module_type, predefined_f, name):
@@ -137,3 +164,36 @@ def centre_str(s, c=' ', width=80):
         # remaining space evenly divides!
         padding = int(floor((remaining * 1.0) / 2))
         return c * (padding + 1) + ' ' + s + ' ' + c * padding
+
+
+# A Singleton pattern for supplying temporary directories and having a single
+# point of call for cleaning all the temporary directories up.
+# Works in Python 2 & 3
+class _Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(_Singleton, cls).__call__(*args,
+                                                                  **kwargs)
+        return cls._instances[cls]
+
+
+class Singleton(_Singleton('SingletonMeta', (object,), {})):
+    pass
+
+
+class TempDirectory(Singleton):
+    _directories = []
+
+    @classmethod
+    def create_new(cls):
+        d = Path(tempfile.mkdtemp())
+        cls._directories.append(d)
+        return d
+
+    @classmethod
+    def delete_all(cls):
+        for d in cls._directories:
+            shutil.rmtree(str(d), ignore_errors=True)
+
