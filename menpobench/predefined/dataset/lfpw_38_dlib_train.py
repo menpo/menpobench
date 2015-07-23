@@ -9,4 +9,4 @@ def generate_dataset():
             img.landmarks['gt'] = img.landmarks['PTS']
             img.landmarks['bbox'] = img.landmarks['PTS'].lms.bounding_box()
             del img.landmarks['PTS']
-            yield img
+            yield path.stem, img

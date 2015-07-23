@@ -8,7 +8,25 @@ from menpobench.preprocess import menpo_preprocess
 from menpobench.utils import load_module_with_error_messages
 
 
-class MenpoFitterWrapper(object):
+class BenchResult(object):
+
+    def __init__(self, final_shape, inital_shape=None):
+        self.final_shape = final_shape
+        self.inital_shape = inital_shape
+
+    def tojson(self):
+        d = {'inital': self.inital_shape.tolist()}
+        if self.final_shape is not None:
+            d['final'] = self.final_shape.tolist()
+        return d
+
+
+def menpofit_to_result(fr):
+    return BenchResult(fr.final_shape.points,
+                       inital_shape=fr.initial_shape.points)
+
+
+class MenpoFitWrapper(object):
 
     def __init__(self, fitter):
         self.fitter = fitter
@@ -18,8 +36,9 @@ class MenpoFitterWrapper(object):
         for img in img_generator:
             img = menpo_preprocess(img)
             # obtain ground truth (original) landmarks
-            gt_shape = img.landmarks['gt_shape'].lms
-            results.append(self.fitter.fit(img, gt_shape, gt_shape=gt_shape))
+            gt = img.landmarks['gt'].lms
+            menpofit_fr = self.fitter.fit(img, gt, gt_shape=gt)
+            results.append(menpofit_to_result(menpofit_fr))
         return results
 
 
@@ -49,7 +68,7 @@ def images_to_mat(images, out_path, attach_ground_truth=False):
         i_dict = {'pixels': as_fortran(im.rolled_channels()),
                   'bbox': as_fortran(np.array(bbox).ravel())}
         if attach_ground_truth:
-            i_dict['gt_shape'] = as_fortran(im.landmarks['gt_shape'].lms.points)
+            i_dict['gt'] = as_fortran(im.landmarks['gt'].lms.points)
         image_dicts.append(i_dict)
 
     if not out_path.exists():

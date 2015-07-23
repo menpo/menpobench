@@ -226,7 +226,7 @@ components are actually python files with a callable inside them called
 objects with landmarks attached with specific group names:
 
 - `bbox` - the bounding box annotation for this image
-- `gt_shape` - the ground truth shape of this image
+- `gt` - the ground truth shape of this image
 
 A simple example of a database loading component looks like this[3]:
 
@@ -250,7 +250,7 @@ DB_PATH = Path('/vol/atlas/database/my_dataset')
 def generate_dataset():
     for path in (DB_PATH / 'training_images').glob('*.jpg'):
         im = mio.import_image(path)
-        im.landmarks['gt_shape'] = mio.import_landmark_file(DB_PATH / 'gt' / (path.stem + '.ljson'))
+        im.landmarks['gt'] = mio.import_landmark_file(DB_PATH / 'gt' / (path.stem + '.ljson'))
         im.landmarks['bbox'] = mio.import_landmark_file(DB_PATH / 'bbox' / (path.stem + '.ljson'))
         yield im
 ```

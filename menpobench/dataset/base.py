@@ -22,31 +22,56 @@ load_module_for_dataset = partial(load_module_with_error_messages,
                                   'dataset', predefined_dataset_path)
 
 
-def wrap_dataset_with_preprocessing_step(img_generator):
-    for img in img_generator():
-        yield basic_preprocess(img)
+def wrap_dataset_with_preprocessing_step(id_img_iter, preprocess):
+    for id_, img in id_img_iter():
+        yield id_, preprocess(img)
 
 
 def retrieve_dataset(dataset_name):
     module = load_module_for_dataset(dataset_name)
-    img_generator = getattr(module, 'generate_dataset')
+    id_and_img_iter = getattr(module, 'generate_dataset')
     # we have a hold on the loading function, but we have some base
     # pre-processing that we always perform per-image. Wrap the generator with
     # the basic pre-processing before we return it.
-    return wrap_dataset_with_preprocessing_step(img_generator)
+    return wrap_dataset_with_preprocessing_step(id_and_img_iter,
+                                                basic_preprocess)
 
 
-def print_processing_status(image_generator):
+def print_processing_status(id_img_iter):
     i = 0
-    for i, image in enumerate(image_generator, 1):
-        print_dynamic('Processing image {}'.format(i))
-        yield image
+    for i, (id_, image) in enumerate(id_img_iter, 1):
+        print_dynamic('Processing image {} ({})'.format(i, id_))
+        yield id_, image
     print_dynamic('{} images processed.'.format(i))
     print('')
 
 
-def retrieve_datasets(dataset_names):
+class RetainIds(object):
+
+    def __init__(self, id_img_iter):
+        self.id_img_iter = id_img_iter
+        self.ids = []
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        id_, img = next(self.id_img_iter)
+        self.ids.append(id_)
+        return img
+
+
+def swallow_ids(id_img_iter):
+    for _, img in id_img_iter:
+        yield img
+
+
+def retrieve_datasets(dataset_names, retain_ids=False):
     # chain together a list of datasets in a row, reporting the progress as
     # we go.
-    return print_processing_status(
+    id_img_iter = print_processing_status(
         chain(*(retrieve_dataset(d) for d in dataset_names)))
+    if retain_ids:
+        return RetainIds(id_img_iter)
+    else:
+        return swallow_ids(id_img_iter)

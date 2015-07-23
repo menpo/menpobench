@@ -1,6 +1,6 @@
-from menpobench.method.base import save_images_to_dir, save_landmarks_to_dir
-from menpobench.method.managed import managed_method
-from menpobench.method.matlab.base import train_matlab_method, MatlabWrapper
+from menpobench.method import (managed_method,
+                               save_images_to_dir, save_landmarks_to_dir,
+                               train_matlab_method, MatlabWrapper)
 
 
 def train(img_generator):
@@ -9,7 +9,7 @@ def train(img_generator):
         images = list(img_generator)
 
         save_images_to_dir(images, train_path)
-        save_landmarks_to_dir(images, 'gt_shape', train_path)
+        save_landmarks_to_dir(images, 'gt', train_path)
 
         train_matlab_method(method_path, 'yzt_iccv_2013.m', train_path)
 

@@ -29,19 +29,22 @@ def invoke_benchmark(experiment_name):
 
                 # A. Training
                 train = retrieve_method(m)
-                training_generator = retrieve_datasets(c['training_data'])
+                trainset = retrieve_datasets(c['training_data'])
                 print(centre_str('training', c='-'))
                 print("Training '{}' with {}".format(m, ', '.join(
                     "'" + d + "'" for d in c['training_data'])))
-                test = train(training_generator)
+                test = train(trainset)
                 print("Training of '{}' completed.".format(m))
 
                 # B. Testing
-                testing_generator = retrieve_datasets(c['testing_data'])
+                # We elect to retain the ids for each of the test images.
+                # We can use them later on to connect the results back to
+                # specific images.
+                testset = retrieve_datasets(c['testing_data'], retain_ids=True)
                 print(centre_str('testing', c='-'))
                 print("Testing '{}' with {}".format(m, ', '.join(
                     "'" + d + "'" for d in c['testing_data'])))
-                results = test(testing_generator)
+                results = {i: r for i, r in zip(testset.ids, test(testset))}
 
         # Untrainable methods cannot be trained, so we can only test them with
         # the test data.
@@ -49,7 +52,10 @@ def invoke_benchmark(experiment_name):
             print(centre_str('II. UNTRAINABLE METHODS', c=' '))
             for m in c['untrainable_methods']:
                 test = retrieve_untrainable_method(m)
-                testing_generator = retrieve_datasets(c['testing_data'])
-                results = test(testing_generator)
+                testset = retrieve_datasets(c['testing_data'], retain_ids=True)
+                print(centre_str('testing', c='-'))
+                print("Testing '{}' with {}".format(m, ', '.join(
+                    "'" + d + "'" for d in c['testing_data'])))
+                results = {i: r for i, r in zip(testset.ids, test(testset))}
     finally:
         TempDirectory.delete_all()
