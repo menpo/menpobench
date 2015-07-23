@@ -2,14 +2,15 @@ from pathlib import Path
 import menpobench
 import shutil
 from menpobench.config import resolve_cache_dir
-from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
-import menpo.io as mio
 from menpobench.dataset import retrieve_datasets
-from menpobench.method import retrieve_method, retrieve_untrainable_method
 from menpobench.experiment import load_experiment
+from menpobench.method import retrieve_method, retrieve_untrainable_method
+from menpobench.output import save_test_results
+from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 
 
-def invoke_benchmark(experiment_name, output_dir, overwrite=False):
+def invoke_benchmark(experiment_name, output_dir, overwrite=False,
+                     matlab=False):
     r"""
     Invoke a benchmark specified with a configuration c
     """
@@ -65,7 +66,8 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False):
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = {i: r for i, r in zip(testset.ids, test(testset))}
-                mio.export_pickle(results, methods_dir / '{}.pkl'.format(method_name))
+                save_test_results(results, method_name, methods_dir,
+                                  matlab=matlab)
 
         # Untrainable methods cannot be trained, so we can only test them with
         # the test data.
@@ -79,7 +81,7 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False):
                 print("Testing '{}' with {}".format(m, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = {i: r for i, r in zip(testset.ids, test(testset))}
-                mio.export_pickle(
-                    results, untrainable_dir / '{}.pkl'.format(method_name))
+                save_test_results(results, method_name, methods_dir,
+                                  matlab=matlab)
     finally:
         TempDirectory.delete_all()

@@ -6,15 +6,16 @@
 path to a .yaml experiment configuration file.
 
 Usage:
-  menpobench <experiment_config> [--output <dir>] [--overwrite]
+  menpobench <experiment_config> [--output <dir>] [--overwrite] [--mat]
   menpobench --list
   menpobench (-h | --help)
   menpobench --version
 
 Options:
   --output -o <dir>  Output directory [default: ./menpobench_result].
-  --overwrite        If provided any existing output dir will be removed.
-  --list             List all available predefined experiemnt components.
+  --overwrite        Any existing output dir will be removed.
+  --mat              A Matlab .mat file will be saved out for each experiment.
+  --list             List all available predefined experiment components.
   -h --help          Show this screen.
   --version          Show version.
 """
@@ -82,4 +83,5 @@ if __name__ == '__main__':
     else:
         invoke_benchmark_with_config_prompts(a['<experiment_config>'],
                                              a['--output'],
-                                             overwrite=a['--overwrite'])
+                                             overwrite=a['--overwrite'],
+                                             matlab=a['--mat'])
