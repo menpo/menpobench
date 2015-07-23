@@ -32,7 +32,7 @@ def invoke_benchmark(experiment_name):
                 trainset = retrieve_datasets(c['training_data'])
                 print(centre_str('training', c='-'))
                 print("Training '{}' with {}".format(m, ', '.join(
-                    "'" + d + "'" for d in c['training_data'])))
+                    "'{}'".format(d) for d in c['training_data'])))
                 test = train(trainset)
                 print("Training of '{}' completed.".format(m))
 
@@ -43,7 +43,7 @@ def invoke_benchmark(experiment_name):
                 testset = retrieve_datasets(c['testing_data'], retain_ids=True)
                 print(centre_str('testing', c='-'))
                 print("Testing '{}' with {}".format(m, ', '.join(
-                    "'" + d + "'" for d in c['testing_data'])))
+                    "'{}'".format(d) for d in c['testing_data'])))
                 results = {i: r for i, r in zip(testset.ids, test(testset))}
 
         # Untrainable methods cannot be trained, so we can only test them with
@@ -55,7 +55,7 @@ def invoke_benchmark(experiment_name):
                 testset = retrieve_datasets(c['testing_data'], retain_ids=True)
                 print(centre_str('testing', c='-'))
                 print("Testing '{}' with {}".format(m, ', '.join(
-                    "'" + d + "'" for d in c['testing_data'])))
+                    "'{}'".format(d) for d in c['testing_data'])))
                 results = {i: r for i, r in zip(testset.ids, test(testset))}
     finally:
         TempDirectory.delete_all()

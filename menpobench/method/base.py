@@ -4,7 +4,7 @@ from scipy.io import savemat
 import menpo.io as mio
 from menpo.visualize import print_progress
 from menpobench import predefined_dir
-from menpobench.preprocess import menpo_preprocess
+from menpobench.imgprocess import menpo_img_process
 from menpobench.utils import load_module_with_error_messages
 
 
@@ -34,7 +34,7 @@ class MenpoFitWrapper(object):
     def __call__(self, img_generator):
         results = []
         for img in img_generator:
-            img = menpo_preprocess(img)
+            img = menpo_img_process(img)
             # obtain ground truth (original) landmarks
             gt = img.landmarks['gt'].lms
             menpofit_fr = self.fitter.fit(img, gt, gt_shape=gt)

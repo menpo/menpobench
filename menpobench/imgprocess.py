@@ -7,7 +7,7 @@ def union_bounding_box(landmarks):
                                       for l in landmarks]), copy=False)
 
 
-def basic_preprocess(img):
+def basic_img_process(img):
     # menpobench does some basic cleanup on all images
     img.landmarks['__super_bbox'] = union_bounding_box(img.landmarks)
     new_img = img.crop_to_landmarks_proportion(0.5, group='__super_bbox')
@@ -16,7 +16,7 @@ def basic_preprocess(img):
     return img
 
 
-def menpo_preprocess(img):
+def menpo_img_process(img):
     # for menpo methods we always want greyscale. we also don't want images
     # that are too large, and we want floating point images.
     img.landmarks['__super_bbox'] = union_bounding_box(img.landmarks)
