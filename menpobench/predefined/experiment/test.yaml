@@ -2,7 +2,13 @@ training_data:
     - lfpw_train_ibug_face_68_dlib
 testing_data:
     - name: lfpw_test_ibug_face_68_dlib
-      landmark_processes:
+      lm_processing:
           - ibug_face_68_to_ibug_face_49
 methods:
-    - aam
+    - name: aam
+      lm_pre_train:
+          - ibug_face_68_to_ibug_face_49
+      lm_pre_test:
+          - ibug_face_68_to_ibug_face_49
+      lm_post_test:
+          - ibug_face_68_to_ibug_face_49

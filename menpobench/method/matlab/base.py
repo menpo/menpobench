@@ -9,6 +9,7 @@ from menpobench.config import (is_linux, is_osx, is_windows,
 from menpobench.method.base import predefined_method_dir, images_to_mat
 from menpobench.utils import invoke_process, TempDirectory
 from menpobench.method import BenchResult
+from menpo.shape import PointCloud
 
 _POTENTIAL_RELEASES = ['2015a', '2014b', '2014a', '2013b', '2013a', '2012b',
                        '2012a']
@@ -101,7 +102,7 @@ def invoke_matlab(command):
 
 def load_matlab_results(results_path):
     results = loadmat(str(results_path / 'menpobench_test_results.mat'))
-    return [BenchResult(r) for r in results['results']]
+    return [BenchResult(PointCloud(r)) for r in results['results']]
 
 
 class MatlabWrapper(object):

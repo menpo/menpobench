@@ -5,6 +5,7 @@ import menpo.io as mio
 from menpo.visualize import print_progress
 from menpobench import predefined_dir
 from menpobench.imgprocess import menpo_img_process
+from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
 from menpobench.utils import load_module_with_error_messages
 
 
@@ -12,18 +13,27 @@ class BenchResult(object):
 
     def __init__(self, final_shape, inital_shape=None):
         self.final_shape = final_shape
-        self.inital_shape = inital_shape
+        self.initial_shape = inital_shape
+
+    @property
+    def has_initial_shape(self):
+        return self.initial_shape is not None
 
     def tojson(self):
-        d = {'inital': self.inital_shape.tolist()}
-        if self.final_shape is not None:
-            d['final'] = self.final_shape.tolist()
+        d = {'final': self.final_shape.points.tolist()}
+        if self.has_initial_shape:
+            d['initial'] = self.initial_shape.points.tolist()
         return d
+
+    def apply_lm_process(self, lm_process):
+        final_shape = lm_process(self.final_shape)
+        initial_shape = (lm_process(self.initial_shape) if
+                         self.has_initial_shape else None)
+        return BenchResult(final_shape, inital_shape=initial_shape)
 
 
 def menpofit_to_result(fr):
-    return BenchResult(fr.final_shape.points,
-                       inital_shape=fr.initial_shape.points)
+    return BenchResult(fr.final_shape, inital_shape=fr.initial_shape)
 
 
 class MenpoFitWrapper(object):
@@ -111,11 +121,86 @@ load_module_for_untrainable_method = partial(
     predefined_untrainable_method_path)
 
 
-def retrieve_method(name):
+def wrap_img_gen_with_lm_process(img_gen, lm_process):
+    for img in img_gen:
+        yield apply_lm_process_to_img(lm_process, img)
+
+
+class TrainMethodLmProcessWrapper(object):
+
+    def __init__(self, train, lm_pre_train, lm_pre_test, lm_post_test):
+        self.train = train
+        self.lm_pre_train = lm_pre_train
+        self.lm_pre_test = lm_pre_test
+        self.lm_post_test = lm_post_test
+
+    def __call__(self, img_gen):
+        # Invoke the train method we hold, but make sure we apply the landmark
+        # parsing around the callable
+        if self.lm_pre_train is not None:
+            img_gen = wrap_img_gen_with_lm_process(img_gen, self.lm_pre_train)
+        # Call the train method with our (potentially wrapped) generator
+        test = self.train(img_gen)
+        # finally wrap the test method returned with our test landmark process
+        # steps
+        return TestMethodLmProcessWrapper(test, self.lm_pre_test,
+                                          self.lm_post_test)
+
+
+class TestMethodLmProcessWrapper(object):
+
+    def __init__(self, test, lm_pre_test, lm_post_test):
+        self.test = test
+        self.lm_pre_test = lm_pre_test
+        self.lm_post_test = lm_post_test
+
+    def __call__(self, img_gen):
+        # Invoke the test method we hold, but make sure we apply the landmark
+        # parsing around the callable
+        if self.lm_pre_test is not None:
+            img_gen = wrap_img_gen_with_lm_process(img_gen, self.lm_pre_test)
+        results = self.test(img_gen)
+        if self.lm_post_test is not None:
+            results = [r.apply_lm_process(self.lm_post_test) for r in results]
+        return results
+
+
+def retrieve_method(method_def):
+    lm_pre_test, lm_post_test, lm_pre_train = None, None, None
+    if isinstance(method_def, str):
+        name = method_def
+    else:
+        name = method_def['name']
+        lm_pre_test_def = method_def.get('lm_pre_test')
+        lm_post_test_def = method_def.get('lm_post_test')
+        if lm_pre_test_def is not None:
+            lm_pre_test = retrieve_lm_processes(lm_pre_test_def)
+        if lm_post_test_def is not None:
+            lm_post_test = retrieve_lm_processes(lm_post_test_def)
+
+        lm_pre_train_def = method_def.get('lm_pre_train')
+        if lm_pre_train_def is not None:
+            lm_pre_train = retrieve_lm_processes(lm_pre_train_def)
+
     module = load_module_for_method(name)
-    return getattr(module, 'train')
+    train = getattr(module, 'train')
+    return TrainMethodLmProcessWrapper(train, lm_pre_train, lm_pre_test,
+                                       lm_post_test)
 
 
-def retrieve_untrainable_method(name):
-    module = load_module_for_untrainable_method(name)
-    return getattr(module, 'test')
+def retrieve_untrainable_method(method_def):
+    lm_pre_test, lm_post_test = None, None
+    if isinstance(method_def, str):
+        name = method_def
+    else:
+        name = method_def['name']
+        lm_pre_test_def = method_def.get('lm_pre_test')
+        lm_post_test_def = method_def.get('lm_post_test')
+        if lm_pre_test_def is not None:
+            lm_pre_test = retrieve_lm_processes(lm_pre_test_def)
+        if lm_post_test_def is not None:
+            lm_post_test = retrieve_lm_processes(lm_post_test_def)
+
+    module = load_module_for_method(name)
+    train = getattr(module, 'test')
+    return TestMethodLmProcessWrapper(train, lm_pre_test, lm_post_test)

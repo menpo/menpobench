@@ -1,7 +1,8 @@
 from itertools import chain
 from functools import partial
+
 from menpobench import predefined_dir
-from menpobench.lmprocess import retrieve_lm_processes
+from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
 from menpobench.imgprocess import basic_img_process
 from menpobench.utils import load_module_with_error_messages
 from menpo.visualize.textutils import print_dynamic
@@ -28,18 +29,13 @@ def wrap_dataset_with_processing(id_img_gen, process):
         yield id_, process(img)
 
 
-def apply_lm_process_to_img(lm_process, img):
-    img.landmarks['gt'] = lm_process(img.landmarks['gt'].lms)
-    return img
-
-
 def retrieve_dataset(dataset_def):
     if isinstance(dataset_def, str):
         name = dataset_def
         lm_process_defs = []
     else:
         name = dataset_def['name']
-        lm_process_defs = dataset_def['landmark_processes']
+        lm_process_defs = dataset_def['lm_processing']
 
     module = load_module_for_dataset(name)
     id_img_gen = getattr(module, 'generate_dataset')()

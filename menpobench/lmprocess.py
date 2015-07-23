@@ -37,3 +37,8 @@ class CallableChain(object):
 def retrieve_lm_processes(lm_process_names):
     # chain together a list of process steps in a row
     return CallableChain(*(retrieve_lm_process(p) for p in lm_process_names))
+
+
+def apply_lm_process_to_img(lm_process, img):
+    img.landmarks['gt'] = lm_process(img.landmarks['gt'].lms)
+    return img
