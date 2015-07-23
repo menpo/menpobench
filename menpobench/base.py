@@ -2,8 +2,8 @@ from pathlib import Path
 import menpobench
 import shutil
 from menpobench.config import resolve_cache_dir
-from menpobench.utils import centre_str, TempDirectory, norm_path
-
+from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
+import menpo.io as mio
 from menpobench.dataset import retrieve_datasets
 from menpobench.method import retrieve_method, retrieve_untrainable_method
 from menpobench.experiment import load_experiment
@@ -25,7 +25,10 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False):
                   'deleting'.format(output_dir))
             shutil.rmtree(str(output_dir))
     output_dir.mkdir()
+    methods_dir = output_dir / 'methods'
+    untrainable_dir = output_dir / 'untrainable_methods'
     c = load_experiment(experiment_name)
+    save_yaml(c, str(output_dir / 'experiment.yaml'))
     # Loop over all requested methods, training and testing them.
     # Note that methods are, by definition trainable.
     print('')
@@ -37,16 +40,18 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False):
     print('')
     try:
         if 'methods' in c:
+            methods_dir.mkdir()
             print(centre_str('I. TRAINABLE METHODS'))
             n_methods = len(c['methods'])
+
             for i, m in enumerate(c['methods'], 1):
                 print(centre_str('{}/{} - {}'.format(i, n_methods, m), c='='))
 
                 # A. Training
-                train = retrieve_method(m)
+                train, method_name = retrieve_method(m)
                 trainset = retrieve_datasets(c['training_data'])
                 print(centre_str('training', c='-'))
-                print("Training '{}' with {}".format(m, ', '.join(
+                print("Training '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['training_data'])))
                 test = train(trainset)
                 print("Training of '{}' completed.".format(m))
@@ -57,20 +62,24 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False):
                 # specific images.
                 testset = retrieve_datasets(c['testing_data'], retain_ids=True)
                 print(centre_str('testing', c='-'))
-                print("Testing '{}' with {}".format(m, ', '.join(
+                print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = {i: r for i, r in zip(testset.ids, test(testset))}
+                mio.export_pickle(results, methods_dir / '{}.pkl'.format(method_name))
 
         # Untrainable methods cannot be trained, so we can only test them with
         # the test data.
         if 'untrainable_methods' in c:
+            untrainable_dir.mkdir()
             print(centre_str('II. UNTRAINABLE METHODS', c=' '))
             for m in c['untrainable_methods']:
-                test = retrieve_untrainable_method(m)
+                test, method_name = retrieve_untrainable_method(m)
                 testset = retrieve_datasets(c['testing_data'], retain_ids=True)
                 print(centre_str('testing', c='-'))
                 print("Testing '{}' with {}".format(m, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = {i: r for i, r in zip(testset.ids, test(testset))}
+                mio.export_pickle(
+                    results, untrainable_dir / '{}.pkl'.format(method_name))
     finally:
         TempDirectory.delete_all()

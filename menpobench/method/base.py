@@ -185,7 +185,7 @@ def retrieve_method(method_def):
     module = load_module_for_method(name)
     train = getattr(module, 'train')
     return TrainMethodLmProcessWrapper(train, lm_pre_train, lm_pre_test,
-                                       lm_post_test)
+                                       lm_post_test), name
 
 
 def retrieve_untrainable_method(method_def):
@@ -203,4 +203,4 @@ def retrieve_untrainable_method(method_def):
 
     module = load_module_for_method(name)
     train = getattr(module, 'test')
-    return TestMethodLmProcessWrapper(train, lm_pre_test, lm_post_test)
+    return TestMethodLmProcessWrapper(train, lm_pre_test, lm_post_test), name
