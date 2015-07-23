@@ -7,15 +7,17 @@
 path to a .yaml experiment configuration file.
 
 Usage:
-  menpobench <experiment_config>
+  menpobench <experiment_config> [--output <dir>] [--overwrite]
   menpobench --list
   menpobench (-h | --help)
   menpobench --version
 
 Options:
-  --list     List all available predefined datasets, methods, and experiments.
-  -h --help  Show this screen.
-  --version  Show version.
+  --output -o <dir>  Output directory [default: ./menpobench_result].
+  --overwrite        If provided any existing output dir will be removed.
+  --list             List all available predefined experiemnt components.
+  -h --help          Show this screen.
+  --version          Show version.
 """
 import menpobench
 from menpobench import (invoke_benchmark, configure_cache_dir,
@@ -24,11 +26,11 @@ from docopt import docopt
 from menpobench.method.matlab.base import resolve_matlab_bin_path
 
 
-def invoke_benchmark_with_config_prompts(experiment_name):
+def invoke_benchmark_with_config_prompts(*args, **kwargs):
     try:
         # TODO: Lazily find Matlab here - this should be fired off by YAML validation
         resolve_matlab_bin_path(verbose=True)
-        invoke_benchmark(experiment_name)
+        invoke_benchmark(*args, **kwargs)
     except KeyError as e:
         if e.message == 'cache_dir':
             print('Welcome to menpobench. To start, you will need to choose a directory')
@@ -38,7 +40,7 @@ def invoke_benchmark_with_config_prompts(experiment_name):
             cache_dir = raw_input('Please enter cache directory: ')
             configure_cache_dir(cache_dir)
             # now we have a cache dir, re-run
-            invoke_benchmark_with_config_prompts(experiment_name)
+            invoke_benchmark_with_config_prompts(*args, **kwargs)
         elif e.message == 'matlab_bin_path':
             print('To use a Matlab method, you must have installed and '
                   'configured Matlab correctly.')
@@ -49,7 +51,7 @@ def invoke_benchmark_with_config_prompts(experiment_name):
             matlab_bin_dir = raw_input('Please enter Matlab executable path: ')
             configure_matlab_bin_path(matlab_bin_dir)
             # now we have a Matlab bin path, re-run
-            invoke_benchmark_with_config_prompts(experiment_name)
+            invoke_benchmark_with_config_prompts(*args, **kwargs)
         else:
             print('Unexpected missing config value: {}'.format(e))
             exit(1)
@@ -72,9 +74,11 @@ def list_all_predefined():
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__,
-                  version='menpobench v{}'.format(menpobench.__version__))
-    if args['--list']:
+    a = docopt(__doc__,
+               version='menpobench v{}'.format(menpobench.__version__))
+    if a['--list']:
         list_all_predefined()
     else:
-        invoke_benchmark_with_config_prompts(args['<experiment_config>'])
+        invoke_benchmark_with_config_prompts(a['<experiment_config>'],
+                                             a['--output'],
+                                             overwrite=a['--overwrite'])

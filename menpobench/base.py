@@ -1,16 +1,30 @@
+from pathlib import Path
 import menpobench
+import shutil
 from menpobench.config import resolve_cache_dir
-from menpobench.utils import centre_str, TempDirectory
+from menpobench.utils import centre_str, TempDirectory, norm_path
 
 from menpobench.dataset import retrieve_datasets
 from menpobench.method import retrieve_method, retrieve_untrainable_method
 from menpobench.experiment import load_experiment
 
 
-def invoke_benchmark(experiment_name):
+def invoke_benchmark(experiment_name, output_dir, overwrite=False):
     r"""
     Invoke a benchmark specified with a configuration c
     """
+    output_dir = Path(norm_path(output_dir))
+    if output_dir.is_dir():
+        if not overwrite:
+            raise ValueError("Output directory {} already exists.\n"
+                             "Pass '--overwrite' if you want menpobench to "
+                             "delete this directory "
+                             "automatically.".format(output_dir))
+        else:
+            print('--overwrite passed and output directory {} exists - '
+                  'deleting'.format(output_dir))
+            shutil.rmtree(str(output_dir))
+    output_dir.mkdir()
     c = load_experiment(experiment_name)
     # Loop over all requested methods, training and testing them.
     # Note that methods are, by definition trainable.
@@ -18,6 +32,7 @@ def invoke_benchmark(experiment_name):
     print(centre_str('- - - -  M E N P O B E N C H  - - - -'))
     print(centre_str('v' + menpobench.__version__))
     print(centre_str('config: {}'.format(experiment_name)))
+    print(centre_str('output: {}'.format(output_dir)))
     print(centre_str('cache: {}'.format(resolve_cache_dir())))
     print('')
     try:
