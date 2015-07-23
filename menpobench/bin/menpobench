@@ -2,7 +2,6 @@
 # encoding: utf-8
 """The Menpo Deformable Model benchmarking suite
 
-
 <experiment_config> can be either the name of a predefined experiment, or the
 path to a .yaml experiment configuration file.
 
@@ -65,11 +64,13 @@ def list_all_predefined():
     from menpobench.dataset import list_predefined_datasets
     from menpobench.method import (list_predefined_methods,
                                    list_predefined_untrainable_methods)
+    from menpobench.lmprocess import list_predefined_lm_processes
     import yaml
     print(yaml.dump({'datasets': list_predefined_datasets(),
                      'methods': list_predefined_methods(),
                      'untrainable_methods': list_predefined_untrainable_methods(),
-                     'experiments': list_predefined_experiments()
+                     'experiments': list_predefined_experiments(),
+                     'landmark_processes': list_predefined_lm_processes()
                      }, default_flow_style=False))
 
 
