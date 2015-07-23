@@ -14,7 +14,7 @@ Usage:
 Options:
   --output -o <dir>  Output directory [default: ./menpobench_result].
   --overwrite        Any existing output dir will be removed.
-  --mat              A Matlab .mat file will be saved out for each experiment.
+  --mat              A Matlab .mat file will be saved out for each method.
   --list             List all available predefined experiment components.
   -h --help          Show this screen.
   --version          Show version.

@@ -9,6 +9,7 @@ import os
 import zipfile
 from pathlib import Path
 import yaml
+import json
 from math import ceil, floor
 from menpo.visualize.textutils import print_progress, bytes_str
 
@@ -130,6 +131,12 @@ def load_yaml(filepath):
 def save_yaml(obj, filepath):
     with open(norm_path(filepath), 'wt') as f:
         yaml.dump(obj, f)
+
+
+def save_json(obj, filepath, pretty=False):
+    kw = {'indent': 4, 'separators': (',', ': ')} if pretty else {}
+    with open(norm_path(filepath), 'wt') as f:
+        json.dump(obj, f, **kw)
 
 
 def create_path(f):
