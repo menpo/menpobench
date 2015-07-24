@@ -65,11 +65,13 @@ def print_processing_status(id_img_gen):
     print('')
 
 
-class RetainIds(object):
+# logs ids and gt shapes for later use by menpobench
+class TestsetWrapper(object):
 
     def __init__(self, id_img_gen):
         self.id_img_gen = id_img_gen
         self.ids = []
+        self.gt_shapes = []
 
     def __iter__(self):
         return self
@@ -77,20 +79,22 @@ class RetainIds(object):
     def next(self):
         id_, img = next(self.id_img_gen)
         self.ids.append(id_)
+        self.gt_shapes.append(img.landmarks.pop('gt'))
         return img
 
 
-def swallow_ids(id_img_gen):
+# discards ids and allows gt shapes through uninterrupted
+def trainset_wrapper(id_img_gen):
     for _, img in id_img_gen:
         yield img
 
 
-def retrieve_datasets(dataset_defs, retain_ids=False):
+def retrieve_datasets(dataset_defs, test=False):
     # chain together a list of datasets in a row, reporting the progress as
     # we go.
     id_img_iter = print_processing_status(
         chain(*(retrieve_dataset(d) for d in dataset_defs)))
-    if retain_ids:
-        return RetainIds(id_img_iter)
+    if test:
+        return TestsetWrapper(id_img_iter)
     else:
-        return swallow_ids(id_img_iter)
+        return trainset_wrapper(id_img_iter)

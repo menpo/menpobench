@@ -5,7 +5,7 @@ import shutil
 from scipy.io import loadmat
 from menpobench import configure_matlab_bin_path
 from menpobench.config import (is_linux, is_osx, is_windows,
-                               resolve_config_path)
+                               resolve_config_path, BenchMissingConfigError)
 from menpobench.method.base import predefined_method_dir, images_to_mat
 from menpobench.utils import invoke_process, TempDirectory
 from menpobench.method import BenchResult
@@ -80,7 +80,7 @@ def resolve_matlab_bin_path(verbose=False):
         matlab_bin_path = find_matlab_binary()
         # If we still failed, re-throw the key-error
         if not matlab_bin_path:
-            raise KeyError('matlab_bin_path')
+            raise BenchMissingConfigError('matlab_bin_path')
         else:  # Save the found matlab path
             if verbose:
                 print('Automatically found Matlab path: {}'.format(matlab_bin_path))

@@ -11,9 +11,6 @@ from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 
 def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                      matlab=False):
-    r"""
-    Invoke a benchmark specified with a configuration c
-    """
     print('')
     print(centre_str('- - - -  M E N P O B E N C H  - - - -'))
     print(centre_str('v' + menpobench.__version__))
@@ -65,10 +62,10 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 print("Training of '{}' completed.".format(method_name))
 
                 # B. Testing
-                # We elect to retain the ids for each of the test images.
-                # We can use them later on to connect the results back to
-                # specific images.
-                testset = retrieve_datasets(c['testing_data'], retain_ids=True)
+                # We elect to retain the ids and gt shapes for each of the
+                # test images. We can use them later on to connect the results
+                # back to specific images and to calculate error metrics.
+                testset = retrieve_datasets(c['testing_data'], test=True)
                 print(centre_str('testing', c='-'))
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
@@ -84,7 +81,7 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
             print(centre_str('II. UNTRAINABLE METHODS', c=' '))
             for m in c['untrainable_methods']:
                 test, method_name = retrieve_untrainable_method(m)
-                testset = retrieve_datasets(c['testing_data'], retain_ids=True)
+                testset = retrieve_datasets(c['testing_data'], test=True)
                 print(centre_str('testing', c='-'))
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))

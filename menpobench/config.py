@@ -4,6 +4,10 @@ import platform
 from menpobench.utils import create_path
 
 
+class BenchMissingConfigError(KeyError):
+    pass
+
+
 def custom_config_path():
     return Path(os.path.expanduser('~')) / '.menpobenchrc'
 
@@ -39,8 +43,10 @@ def resolve_cache_dir(verbose=False):
 
     from menpobench.utils import load_yaml
     config_path = resolve_config_path()
-    # Will throw key error if cache_dir does not exist
-    cache_dir = Path(load_yaml(config_path)['cache_dir'])
+    try:
+        cache_dir = Path(load_yaml(config_path)['cache_dir'])
+    except KeyError as e:
+        raise BenchMissingConfigError(e.message)
     if verbose:
         print('Cache dir: {}'.format(cache_dir))
     # Cache the result so we don't keep querying the rc file

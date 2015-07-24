@@ -20,10 +20,13 @@ Options:
   --version          Show version.
 """
 import menpobench
+import traceback
 from menpobench import (invoke_benchmark, configure_cache_dir,
                         configure_matlab_bin_path)
 from docopt import docopt
 from menpobench.method.matlab.base import resolve_matlab_bin_path
+from menpobench.config import BenchMissingConfigError
+from menpobench.utils import centre_str
 
 
 def invoke_benchmark_with_config_prompts(*args, **kwargs):
@@ -31,7 +34,7 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
         # TODO: Lazily find Matlab here - this should be fired off by YAML validation
         resolve_matlab_bin_path(verbose=True)
         invoke_benchmark(*args, **kwargs)
-    except KeyError as e:
+    except BenchMissingConfigError as e:
         if e.message == 'cache_dir':
             print('Welcome to menpobench. To start, you will need to choose a directory')
             print('that menpobench can use as a cache.')
@@ -42,11 +45,11 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
             # now we have a cache dir, re-run
             invoke_benchmark_with_config_prompts(*args, **kwargs)
         elif e.message == 'matlab_bin_path':
-            print('To use a Matlab method, you must have installed and '
+            print('To use a Matlab method you must have installed and '
                   'configured Matlab correctly.')
-            print('Despite attempting to automatically locate Matlab, '
-                  'menpobench was unable to find the Matlab executable.')
-            print('Therefore, please specify the path to the Matlab executable, '
+            print('menpobench was unable to automatically find the Matlab executable '
+                  '- please')
+            print('specify the path to the Matlab executable, '
                   "usually found in the 'bin' directory")
             matlab_bin_dir = raw_input('Please enter Matlab executable path: ')
             configure_matlab_bin_path(matlab_bin_dir)
@@ -55,8 +58,12 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
         else:
             print('Unexpected missing config value: {}'.format(e))
             exit(1)
-    except ValueError as e:
-        print('ERROR: {}'.format(e.message))
+    except Exception as e:
+        print('\n')
+        print(centre_str('ERROR', c='!'))
+        print(centre_str('-- menpobench has encountered an unrecoverable error --'))
+        print(' ')
+        print(traceback.format_exc())
         exit(1)
 
 
