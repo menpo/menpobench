@@ -5,6 +5,5 @@ testing_data:
       lm_post_load: ibug_face_68_to_ibug_face_49
 methods:
     - name: aam
-      lm_pre_train: ibug_face_68_to_ibug_face_49
-      lm_pre_test: ibug_face_68_to_ibug_face_49
       lm_post_test: ibug_face_68_to_ibug_face_49
+normalization: bounding_box_area

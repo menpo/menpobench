@@ -14,6 +14,9 @@ required:
             lm_post_load:
               type: //any
               of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
+  normalization:
+    type: //any
+    of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
 optional:
   training_data:
     type: //arr

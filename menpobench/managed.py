@@ -129,8 +129,7 @@ def managed_asset(asset_set, name, verbose=True, cleanup=True):
     # Ensure the asset in question is cached locally
     download_asset_if_needed(asset, verbose=verbose)
     if verbose:
-        print("Unpacking cached asset '{}' to {}".format(name,
-                                                         asset.unpacked_path()))
+        print("Unpacking cached asset '{}'".format(name))
     asset.unpack()
     try:
         yield asset.unpacked_path()
