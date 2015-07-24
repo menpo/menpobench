@@ -3,7 +3,7 @@ import menpobench
 import shutil
 from menpobench.config import resolve_cache_dir
 from menpobench.dataset import retrieve_datasets
-from menpobench.experiment import load_experiment
+from menpobench.experiment import load_experiment, experiment_is_valid
 from menpobench.method import retrieve_method, retrieve_untrainable_method
 from menpobench.output import save_test_results
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
@@ -14,8 +14,22 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
     r"""
     Invoke a benchmark specified with a configuration c
     """
-    output_dir = Path(norm_path(output_dir))
-    if output_dir.is_dir():
+    print('')
+    print(centre_str('- - - -  M E N P O B E N C H  - - - -'))
+    print(centre_str('v' + menpobench.__version__))
+    print(centre_str('config: {}'.format(experiment_name)))
+    print(centre_str('output: {}'.format(output_dir)))
+    print(centre_str('cache: {}'.format(resolve_cache_dir())))
+    print('')
+    # Load the experiment and check it's schematically valid
+    c = load_experiment(experiment_name)
+    if not experiment_is_valid(c):
+        raise ValueError("There is some mistake in the schema for experiment "
+                         "'{}'.\nTry commenting out parts of the config to "
+                         "find the problem.".format(experiment_name))
+    # Handle the creation of the output directory
+    output_dir_p = Path(norm_path(output_dir))
+    if output_dir_p.is_dir():
         if not overwrite:
             raise ValueError("Output directory {} already exists.\n"
                              "Pass '--overwrite' if you want menpobench to "
@@ -24,21 +38,13 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
         else:
             print('--overwrite passed and output directory {} exists - '
                   'deleting'.format(output_dir))
-            shutil.rmtree(str(output_dir))
-    output_dir.mkdir()
-    methods_dir = output_dir / 'methods'
-    untrainable_dir = output_dir / 'untrainable_methods'
-    c = load_experiment(experiment_name)
-    save_yaml(c, str(output_dir / 'experiment.yaml'))
+            shutil.rmtree(str(output_dir_p))
+    output_dir_p.mkdir()
+    methods_dir = output_dir_p / 'methods'
+    untrainable_dir = output_dir_p / 'untrainable_methods'
+    save_yaml(c, str(output_dir_p / 'experiment.yaml'))
     # Loop over all requested methods, training and testing them.
     # Note that methods are, by definition trainable.
-    print('')
-    print(centre_str('- - - -  M E N P O B E N C H  - - - -'))
-    print(centre_str('v' + menpobench.__version__))
-    print(centre_str('config: {}'.format(experiment_name)))
-    print(centre_str('output: {}'.format(output_dir)))
-    print(centre_str('cache: {}'.format(resolve_cache_dir())))
-    print('')
     try:
         if 'methods' in c:
             methods_dir.mkdir()

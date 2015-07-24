@@ -1,0 +1,51 @@
+---
+type: //rec
+required:
+  testing_data:
+    type: //arr
+    length: { min: 1 }
+    contents:
+      type: //any
+      of:
+        - //str
+        - type: //rec
+          required: { name: //str }
+          optional:
+            lm_processing: { type: //arr, length: { min: 1 }, contents: //str }
+optional:
+  training_data:
+    type: //arr
+    length: { min: 1 }
+    contents:
+      type: //any
+      of:
+        - //str
+        - type: //rec
+          required: { name: //str }
+          optional:
+            lm_processing: { type: //arr, length: { min: 1 }, contents: //str }
+  methods:
+    type: //arr
+    length: { min: 1 }
+    contents:
+      type: //any
+      of:
+        - //str
+        - type: //rec
+          required: { name: //str }
+          optional:
+            lm_pre_train: { type: //arr, length: { min: 1 }, contents: //str }
+            lm_pre_test: { type: //arr, length: { min: 1 }, contents: //str }
+            lm_post_test: { type: //arr, length: { min: 1 }, contents: //str }
+  untrainable_methods:
+    type: //arr
+    length: { min: 1 }
+    contents:
+      type: //any
+      of:
+        - //str
+        - type: //rec
+          required: { name: //str }
+          optional:
+            lm_pre_test: { type: //arr, length: { min: 1 }, contents: //str }
+            lm_post_test: { type: //arr, length: { min: 1 }, contents: //str }

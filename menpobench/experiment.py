@@ -1,3 +1,4 @@
+import pyrx
 from menpobench import predefined_dir
 from menpobench.utils import load_yaml
 
@@ -30,3 +31,19 @@ def load_experiment(experiment_name):
             raise ValueError("Requested predefined experiment configuration "
                              "'{}' does not exist".format(experiment_name))
     return config
+
+
+SCHEMA = None
+
+
+def _load_schema():
+    global SCHEMA
+    rx = pyrx.Factory({"register_core_types": True})
+    s = load_yaml(predefined_dir() / 'schema.yaml')
+    SCHEMA = rx.make_schema(s)
+
+
+def experiment_is_valid(config):
+    if SCHEMA is None:
+        _load_schema()
+    return SCHEMA.check(config)
