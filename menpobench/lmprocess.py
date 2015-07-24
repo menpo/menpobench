@@ -34,9 +34,13 @@ class CallableChain(object):
         return reduce(lambda y, f: f(y), self.callables, x)
 
 
-def retrieve_lm_processes(lm_process_names):
-    # chain together a list of process steps in a row
-    return CallableChain(*(retrieve_lm_process(p) for p in lm_process_names))
+def retrieve_lm_processes(lm_process_def):
+    if not isinstance(lm_process_def, list):
+        # a single lm_process provided
+        return retrieve_lm_process(lm_process_def)
+    else:
+        # chain together a list of process steps in a row
+        return CallableChain(*(retrieve_lm_process(p) for p in lm_process_def))
 
 
 def apply_lm_process_to_img(lm_process, img):

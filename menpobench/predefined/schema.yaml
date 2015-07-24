@@ -11,7 +11,9 @@ required:
         - type: //rec
           required: { name: //str }
           optional:
-            lm_processing: { type: //arr, length: { min: 1 }, contents: //str }
+            lm_processing:
+              type: //any
+              of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
 optional:
   training_data:
     type: //arr
@@ -23,7 +25,9 @@ optional:
         - type: //rec
           required: { name: //str }
           optional:
-            lm_processing: { type: //arr, length: { min: 1 }, contents: //str }
+            lm_processing:
+              type: //any
+              of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
   methods:
     type: //arr
     length: { min: 1 }
@@ -34,9 +38,15 @@ optional:
         - type: //rec
           required: { name: //str }
           optional:
-            lm_pre_train: { type: //arr, length: { min: 1 }, contents: //str }
-            lm_pre_test: { type: //arr, length: { min: 1 }, contents: //str }
-            lm_post_test: { type: //arr, length: { min: 1 }, contents: //str }
+            lm_pre_train:
+              type: //any
+              of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
+            lm_pre_test:
+              type: //any
+              of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
+            lm_post_test:
+              type: //any
+              of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
   untrainable_methods:
     type: //arr
     length: { min: 1 }
@@ -47,5 +57,9 @@ optional:
         - type: //rec
           required: { name: //str }
           optional:
-            lm_pre_test: { type: //arr, length: { min: 1 }, contents: //str }
-            lm_post_test: { type: //arr, length: { min: 1 }, contents: //str }
+            lm_pre_test:
+              type: //any
+              of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
+            lm_post_test:
+              type: //any
+              of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]

@@ -30,12 +30,15 @@ def wrap_dataset_with_processing(id_img_gen, process):
 
 
 def retrieve_dataset(dataset_def):
+    lm_process = None
     if isinstance(dataset_def, str):
         name = dataset_def
-        lm_process_defs = []
     else:
         name = dataset_def['name']
-        lm_process_defs = dataset_def['lm_processing']
+        lm_process_def = dataset_def.get('lm_processing')
+        if lm_process_def is not None:
+            # user is specifying some landmark processing
+            lm_process = retrieve_lm_processes(lm_process_def)
 
     module = load_module_for_dataset(name)
     id_img_gen = getattr(module, 'generate_dataset')()
@@ -44,9 +47,8 @@ def retrieve_dataset(dataset_def):
     # the basic pre-processing before we return it.
     id_img_gen = wrap_dataset_with_processing(id_img_gen, basic_img_process)
 
-    if len(lm_process_defs) > 0:
+    if lm_process is not None:
         # the specified lm_processes needs to be added after basic processing
-        lm_process = retrieve_lm_processes(lm_process_defs)
         # take the landmark processing and apply it to each image
         img_lm_process = partial(apply_lm_process_to_img, lm_process)
         id_img_gen = wrap_dataset_with_processing(id_img_gen, img_lm_process)
