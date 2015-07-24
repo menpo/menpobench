@@ -37,7 +37,7 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                              "automatically.".format(output_dir))
         else:
             print('--overwrite passed and output directory {} exists - '
-                  'deleting'.format(output_dir))
+                  'deleting\n'.format(output_dir))
             shutil.rmtree(str(output_dir_p))
     output_dir_p.mkdir()
     methods_dir = output_dir_p / 'methods'
@@ -52,16 +52,17 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
             n_methods = len(c['methods'])
 
             for i, m in enumerate(c['methods'], 1):
-                print(centre_str('{}/{} - {}'.format(i, n_methods, m), c='='))
 
                 # A. Training
                 train, method_name = retrieve_method(m)
+                print(centre_str('{}/{} - {}'.format(i, n_methods, method_name)
+                                 , c='='))
                 trainset = retrieve_datasets(c['training_data'])
                 print(centre_str('training', c='-'))
                 print("Training '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['training_data'])))
                 test = train(trainset)
-                print("Training of '{}' completed.".format(m))
+                print("Training of '{}' completed.".format(method_name))
 
                 # B. Testing
                 # We elect to retain the ids for each of the test images.
@@ -74,6 +75,7 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 results = {i: r for i, r in zip(testset.ids, test(testset))}
                 save_test_results(results, method_name, methods_dir,
                                   matlab=matlab)
+                print("Testing of '{}' completed.".format(method_name))
 
         # Untrainable methods cannot be trained, so we can only test them with
         # the test data.
@@ -84,10 +86,11 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 test, method_name = retrieve_untrainable_method(m)
                 testset = retrieve_datasets(c['testing_data'], retain_ids=True)
                 print(centre_str('testing', c='-'))
-                print("Testing '{}' with {}".format(m, ', '.join(
+                print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = {i: r for i, r in zip(testset.ids, test(testset))}
                 save_test_results(results, method_name, methods_dir,
                                   matlab=matlab)
+                print("Testing of '{}' completed.".format(method_name))
     finally:
         TempDirectory.delete_all()
