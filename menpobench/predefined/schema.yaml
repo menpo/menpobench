@@ -11,7 +11,7 @@ required:
         - type: //rec
           required: { name: //str }
           optional:
-            lm_processing:
+            lm_post_load:
               type: //any
               of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
 optional:

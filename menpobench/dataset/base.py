@@ -35,7 +35,7 @@ def retrieve_dataset(dataset_def):
         name = dataset_def
     else:
         name = dataset_def['name']
-        lm_process_def = dataset_def.get('lm_processing')
+        lm_process_def = dataset_def.get('lm_post_load')
         if lm_process_def is not None:
             # user is specifying some landmark processing
             lm_process = retrieve_lm_processes(lm_process_def)
