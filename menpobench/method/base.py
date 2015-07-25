@@ -42,12 +42,15 @@ class MenpoFitWrapper(object):
         self.fitter = fitter
 
     def __call__(self, img_generator):
+        from menpofit.fitter import align_shape_with_bounding_box
         results = []
+        ref_shape = self.fitter.reference_shape
         for img in img_generator:
             img = menpo_img_process(img)
             # obtain ground truth (original) landmarks
-            gt = img.landmarks['gt'].lms
-            menpofit_fr = self.fitter.fit(img, gt, gt_shape=gt)
+            bbox = img.landmarks['bbox'].lms
+            init_shape = align_shape_with_bounding_box(ref_shape, bbox)
+            menpofit_fr = self.fitter.fit(img, init_shape)
             results.append(menpofit_to_result(menpofit_fr))
         return results
 
