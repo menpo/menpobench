@@ -6,9 +6,9 @@ from scipy.io import loadmat
 from menpobench import configure_matlab_bin_path
 from menpobench.config import (is_linux, is_osx, is_windows,
                                resolve_config_path, BenchMissingConfigError)
-from menpobench.method.base import predefined_method_dir, images_to_mat
+from menpobench.method.base import (predefined_method_dir, images_to_mat,
+                                    BenchResult)
 from menpobench.utils import invoke_process, TempDirectory
-from menpobench.method import BenchResult
 from menpo.shape import PointCloud
 
 _POTENTIAL_RELEASES = ['2015a', '2014b', '2014a', '2013b', '2013a', '2012b',

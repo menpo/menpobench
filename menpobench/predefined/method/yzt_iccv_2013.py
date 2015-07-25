@@ -1,6 +1,6 @@
-from menpobench.method import (managed_method,
-                               save_images_to_dir, save_landmarks_to_dir,
-                               train_matlab_method, MatlabWrapper)
+from menpobench.method import (save_images_to_dir, save_landmarks_to_dir,
+                               train_matlab_method, MatlabWrapper,
+                               managed_method)
 
 metadata = {
     'display_name': 'YZT AAM (ICCV 2013)',

@@ -8,6 +8,7 @@ def generate_dataset():
         for path in list((lfpw_path / 'trainset').glob('*.png'))[:20]:
             img = mio.import_image(path, normalise=False)
             img.landmarks['gt'] = ibug_face_68(img.landmarks['PTS'])[1]
+            # TODO make lfpw_train_dlib bounding boxes
             img.landmarks['bbox'] = img.landmarks['PTS'].lms.bounding_box()
             del img.landmarks['PTS']
             yield path.stem, img
