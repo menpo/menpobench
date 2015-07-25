@@ -6,7 +6,7 @@ from menpobench.dataset import retrieve_datasets
 from menpobench.errormetric import retrieve_error_metrics
 from menpobench.experiment import load_experiment, experiment_is_valid
 from menpobench.method import retrieve_method, retrieve_untrainable_method
-from menpobench.output import save_test_results, calculate_errors
+from menpobench.output import save_test_results, save_errors
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 
 
@@ -40,14 +40,21 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                   'deleting\n'.format(output_dir))
             shutil.rmtree(str(output_dir_p))
     output_dir_p.mkdir()
-    methods_dir = output_dir_p / 'methods'
-    untrainable_dir = output_dir_p / 'untrainable_methods'
+    errors_dir = output_dir_p / 'errors'
+    results_dir = output_dir_p / 'results'
+    errors_dir.mkdir()
+    results_dir.mkdir()
+    results_methods_dir = results_dir / 'methods'
+    results_untrainable_dir = results_dir / 'untrainable_methods'
+    errors_methods_dir = errors_dir / 'methods'
+    errors_untrainable_dir = errors_dir / 'untrainable_methods'
     save_yaml(c, str(output_dir_p / 'experiment.yaml'))
     # Loop over all requested methods, training and testing them.
     # Note that methods are, by definition trainable.
     try:
         if 'methods' in c:
-            methods_dir.mkdir()
+            results_methods_dir.mkdir()
+            errors_methods_dir.mkdir()
             print(centre_str('I. TRAINABLE METHODS'))
             n_methods = len(c['methods'])
 
@@ -74,15 +81,17 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = test(testset)
                 results_dict = {i: r for i, r in zip(testset.ids, results)}
-                save_test_results(results_dict, method_name, methods_dir,
-                                  matlab=matlab)
-                calculate_errors(testset.gt_shapes, results, error_metrics)
+                save_test_results(results_dict, method_name,
+                                  results_methods_dir, matlab=matlab)
+                save_errors(testset.gt_shapes, results, error_metrics,
+                            method_name, errors_methods_dir)
                 print("Testing of '{}' completed.".format(method_name))
 
         # Untrainable methods cannot be trained, so we can only test them with
         # the test data.
         if 'untrainable_methods' in c:
-            untrainable_dir.mkdir()
+            results_untrainable_dir.mkdir()
+            errors_untrainable_dir.mkdir()
             print(centre_str('II. UNTRAINABLE METHODS', c=' '))
             for m in c['untrainable_methods']:
                 test, method_name = retrieve_untrainable_method(m)
@@ -92,9 +101,10 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = test(testset)
                 results_dict = {i: r for i, r in zip(testset.ids, results)}
-                save_test_results(results_dict, method_name, methods_dir,
-                                  matlab=matlab)
-                calculate_errors(testset.gt_shapes, results, error_metrics)
+                save_test_results(results_dict, method_name,
+                                  results_untrainable_dir, matlab=matlab)
+                save_errors(testset.gt_shapes, results, error_metrics,
+                            method_name, errors_untrainable_dir)
                 print("Testing of '{}' completed.".format(method_name))
     finally:
         TempDirectory.delete_all()
