@@ -28,8 +28,8 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
     # prepare the error metrics
     error_metrics = retrieve_error_metrics(c['error_metric'])
     # Handle the creation of the output directory
-    output_dir_p = Path(norm_path(output_dir))
-    if output_dir_p.is_dir():
+    output_dir = Path(norm_path(output_dir))
+    if output_dir.is_dir():
         if not overwrite:
             raise ValueError("Output directory {} already exists.\n"
                              "Pass '--overwrite' if you want menpobench to "
@@ -38,17 +38,17 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
         else:
             print('--overwrite passed and output directory {} exists - '
                   'deleting\n'.format(output_dir))
-            shutil.rmtree(str(output_dir_p))
-    output_dir_p.mkdir()
-    errors_dir = output_dir_p / 'errors'
-    results_dir = output_dir_p / 'results'
+            shutil.rmtree(str(output_dir))
+    output_dir.mkdir()
+    errors_dir = output_dir / 'errors'
+    results_dir = output_dir / 'results'
     errors_dir.mkdir()
     results_dir.mkdir()
     results_methods_dir = results_dir / 'methods'
     results_untrainable_dir = results_dir / 'untrainable_methods'
     errors_methods_dir = errors_dir / 'methods'
     errors_untrainable_dir = errors_dir / 'untrainable_methods'
-    save_yaml(c, str(output_dir_p / 'experiment.yaml'))
+    save_yaml(c, str(output_dir / 'experiment.yaml'))
     # Loop over all requested methods, training and testing them.
     # Note that methods are, by definition trainable.
     try:
@@ -117,6 +117,6 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 print("Testing of '{}' completed.".format(method_name))
 
         # We now have all the results computed - draw the CED curves.
-        plot_ceds(output_dir_p)
+        plot_ceds(output_dir)
     finally:
         TempDirectory.delete_all()
