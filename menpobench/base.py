@@ -67,30 +67,30 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
 
                 # A. Training
                 print(centre_str('training', c='-'))
-                trainset = retrieve_datasets(c['training_data'])
+                train_set = retrieve_datasets(c['training_data'])
                 print("Training '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['training_data'])))
-                test = train(trainset)
+                test = train(train_set)
                 print("Training of '{}' completed.".format(method_name))
 
                 # B. Testing
                 print(centre_str('testing', c='-'))
-                testset = retrieve_datasets(c['testing_data'], test=True)
+                test_set = retrieve_datasets(c['testing_data'], test=True)
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
-                results = test(testset)
+                results = test(test_set)
 
                 # C. Save results
-                results_dict = {i: r for i, r in zip(testset.ids, results)}
+                results_dict = {i: r for i, r in zip(test_set.ids, results)}
                 save_test_results(results_dict, method_name,
                                   results_methods_dir, matlab=matlab)
-                save_errors(testset.gt_shapes, results, error_metrics,
+                save_errors(test_set.gt_shapes, results, error_metrics,
                             method_name, errors_methods_dir)
                 print("Testing of '{}' completed.\n".format(method_name))
 
         if 'untrainable_methods' in c:
             print(centre_str('II. UNTRAINABLE METHODS', c=' '))
-            n_untrainable_methods = len(c['methods'])
+            n_untrainable_methods = len(c['untrainable_methods'])
             results_untrainable_dir.mkdir()
             errors_untrainable_dir.mkdir()
 
@@ -103,16 +103,16 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
 
                 # A. Testing
                 print(centre_str('testing', c='-'))
-                testset = retrieve_datasets(c['testing_data'], test=True)
+                test_set = retrieve_datasets(c['testing_data'], test=True)
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
-                results = test(testset)
+                results = test(test_set)
 
                 # B. Save results
                 results_dict = {i: r for i, r in zip(testset.ids, results)}
                 save_test_results(results_dict, method_name,
                                   results_untrainable_dir, matlab=matlab)
-                save_errors(testset.gt_shapes, results, error_metrics,
+                save_errors(test_set.gt_shapes, results, error_metrics,
                             method_name, errors_untrainable_dir)
                 print("Testing of '{}' completed.".format(method_name))
 
