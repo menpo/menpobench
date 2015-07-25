@@ -6,7 +6,7 @@ from menpobench.dataset import retrieve_datasets
 from menpobench.errormetric import retrieve_error_metrics
 from menpobench.experiment import load_experiment, experiment_is_valid
 from menpobench.method import retrieve_method, retrieve_untrainable_method
-from menpobench.output import save_test_results, save_errors
+from menpobench.output import save_test_results, save_errors, plot_ceds
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 
 
@@ -53,58 +53,70 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
     # Note that methods are, by definition trainable.
     try:
         if 'methods' in c:
-            results_methods_dir.mkdir()
-            errors_methods_dir.mkdir()
             print(centre_str('I. TRAINABLE METHODS'))
             n_methods = len(c['methods'])
+            results_methods_dir.mkdir()
+            errors_methods_dir.mkdir()
 
             for i, m in enumerate(c['methods'], 1):
 
-                # A. Training
+                # Retrieval
                 train, method_name = retrieve_method(m)
                 print(centre_str('{}/{} - {}'.format(i, n_methods, method_name)
                                  , c='='))
-                trainset = retrieve_datasets(c['training_data'])
+
+                # A. Training
                 print(centre_str('training', c='-'))
+                trainset = retrieve_datasets(c['training_data'])
                 print("Training '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['training_data'])))
                 test = train(trainset)
                 print("Training of '{}' completed.".format(method_name))
 
                 # B. Testing
-                # We elect to retain the ids and gt shapes for each of the
-                # test images. We can use them later on to connect the results
-                # back to specific images and to calculate error metrics.
-                testset = retrieve_datasets(c['testing_data'], test=True)
                 print(centre_str('testing', c='-'))
+                testset = retrieve_datasets(c['testing_data'], test=True)
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = test(testset)
+
+                # C. Save results
                 results_dict = {i: r for i, r in zip(testset.ids, results)}
                 save_test_results(results_dict, method_name,
                                   results_methods_dir, matlab=matlab)
                 save_errors(testset.gt_shapes, results, error_metrics,
                             method_name, errors_methods_dir)
-                print("Testing of '{}' completed.".format(method_name))
+                print("Testing of '{}' completed.\n".format(method_name))
 
-        # Untrainable methods cannot be trained, so we can only test them with
-        # the test data.
         if 'untrainable_methods' in c:
+            print(centre_str('II. UNTRAINABLE METHODS', c=' '))
+            n_untrainable_methods = len(c['methods'])
             results_untrainable_dir.mkdir()
             errors_untrainable_dir.mkdir()
-            print(centre_str('II. UNTRAINABLE METHODS', c=' '))
-            for m in c['untrainable_methods']:
+
+            for i, m in enumerate(c['untrainable_methods'], 1):
+
+                # Retrieval
                 test, method_name = retrieve_untrainable_method(m)
-                testset = retrieve_datasets(c['testing_data'], test=True)
+                print(centre_str('{}/{} - {}'.format(i, n_untrainable_methods,
+                                                     method_name), c='='))
+
+                # A. Testing
                 print(centre_str('testing', c='-'))
+                testset = retrieve_datasets(c['testing_data'], test=True)
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = test(testset)
+
+                # B. Save results
                 results_dict = {i: r for i, r in zip(testset.ids, results)}
                 save_test_results(results_dict, method_name,
                                   results_untrainable_dir, matlab=matlab)
                 save_errors(testset.gt_shapes, results, error_metrics,
                             method_name, errors_untrainable_dir)
                 print("Testing of '{}' completed.".format(method_name))
+
+        # We now have all the results computed - draw the CED curves.
+        plot_ceds(output_dir_p)
     finally:
         TempDirectory.delete_all()

@@ -3,6 +3,11 @@ from menpobench.imgprocess import menpo_img_process
 from menpofit.aam import AAMBuilder, LucasKanadeAAMFitter
 from menpo.feature import fast_dsift
 
+metadata = {
+    'display_name': 'Menpo Active Appearance Model',
+    'display_name_short': 'Menpo AAM'
+}
+
 
 def train(img_generator):
     # clean up the images with the standard menpo preprocessing

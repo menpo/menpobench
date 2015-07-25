@@ -2,6 +2,11 @@ from menpobench.method import (managed_method,
                                save_images_to_dir, save_landmarks_to_dir,
                                train_matlab_method, MatlabWrapper)
 
+metadata = {
+    'display_name': 'YZT AAM (ICCV 2013)',
+    'display_name_short': 'YZT AAM'
+}
+
 
 def train(img_generator):
     with managed_method('yzt_iccv_2013', cleanup=False) as method_path:

@@ -5,6 +5,7 @@ testing_data:
 methods:
     - name: aam
       lm_post_test: face_ibug_68_to_face_ibug_49
+    - aam
 error_metric:
   - euclidean
   - face_area_ibug_68

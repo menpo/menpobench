@@ -133,6 +133,12 @@ def save_yaml(obj, filepath):
         yaml.dump(obj, f)
 
 
+def load_json(filepath):
+    with open(norm_path(filepath), 'rt') as f:
+        y = json.load(f)
+    return y
+
+
 def save_json(obj, filepath, pretty=False):
     kw = {'indent': 4, 'separators': (',', ': ')} if pretty else {}
     with open(norm_path(filepath), 'wt') as f:
