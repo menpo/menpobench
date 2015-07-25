@@ -5,7 +5,7 @@ from menpobench.config import resolve_cache_dir
 from menpobench.dataset import retrieve_datasets
 from menpobench.experiment import load_experiment, experiment_is_valid
 from menpobench.method import retrieve_method, retrieve_untrainable_method
-from menpobench.output import save_test_results
+from menpobench.output import save_test_results, calculate_error
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 
 
@@ -69,9 +69,11 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 print(centre_str('testing', c='-'))
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
-                results = {i: r for i, r in zip(testset.ids, test(testset))}
-                save_test_results(results, method_name, methods_dir,
+                results = test(testset)
+                results_dict = {i: r for i, r in zip(testset.ids, results)}
+                save_test_results(results_dict, method_name, methods_dir,
                                   matlab=matlab)
+                calculate_error(testset.gt_shapes, results)
                 print("Testing of '{}' completed.".format(method_name))
 
         # Untrainable methods cannot be trained, so we can only test them with
@@ -85,9 +87,11 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 print(centre_str('testing', c='-'))
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
-                results = {i: r for i, r in zip(testset.ids, test(testset))}
-                save_test_results(results, method_name, methods_dir,
+                results = test(testset)
+                results_dict = {i: r for i, r in zip(testset.ids, final_shapes)}
+                save_test_results(results_dict, method_name, methods_dir,
                                   matlab=matlab)
+                calculate_error(testset.gt_shapes, results)
                 print("Testing of '{}' completed.".format(method_name))
     finally:
         TempDirectory.delete_all()
