@@ -5,4 +5,4 @@ testing_data:
 methods:
     - name: aam
       lm_post_test: face_ibug_68_to_face_ibug_49
-normalization: bounding_box_area
+error_metric: face_area_ibug_68

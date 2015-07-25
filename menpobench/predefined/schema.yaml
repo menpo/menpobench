@@ -14,7 +14,7 @@ required:
             lm_post_load:
               type: //any
               of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
-  normalization:
+  error_metric:
     type: //any
     of: [//str, { type: //arr, length: { min: 1 }, contents: //str }]
 optional:
