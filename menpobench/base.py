@@ -3,9 +3,10 @@ import menpobench
 import shutil
 from menpobench.config import resolve_cache_dir
 from menpobench.dataset import retrieve_datasets
+from menpobench.errormetric import retrieve_error_metrics
 from menpobench.experiment import load_experiment, experiment_is_valid
 from menpobench.method import retrieve_method, retrieve_untrainable_method
-from menpobench.output import save_test_results, calculate_error
+from menpobench.output import save_test_results, calculate_errors
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 
 
@@ -24,6 +25,8 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
         raise ValueError("There is some mistake in the schema for experiment "
                          "'{}'.\nTry commenting out parts of the config to "
                          "find the problem.".format(experiment_name))
+    # prepare the error metrics
+    error_metrics = retrieve_error_metrics(c['error_metric'])
     # Handle the creation of the output directory
     output_dir_p = Path(norm_path(output_dir))
     if output_dir_p.is_dir():
@@ -73,7 +76,7 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 results_dict = {i: r for i, r in zip(testset.ids, results)}
                 save_test_results(results_dict, method_name, methods_dir,
                                   matlab=matlab)
-                calculate_error(testset.gt_shapes, results)
+                calculate_errors(testset.gt_shapes, results, error_metrics)
                 print("Testing of '{}' completed.".format(method_name))
 
         # Untrainable methods cannot be trained, so we can only test them with
@@ -88,10 +91,10 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 print("Testing '{}' with {}".format(method_name, ', '.join(
                     "'{}'".format(d) for d in c['testing_data'])))
                 results = test(testset)
-                results_dict = {i: r for i, r in zip(testset.ids, final_shapes)}
+                results_dict = {i: r for i, r in zip(testset.ids, results)}
                 save_test_results(results_dict, method_name, methods_dir,
                                   matlab=matlab)
-                calculate_error(testset.gt_shapes, results)
+                calculate_errors(testset.gt_shapes, results, error_metrics)
                 print("Testing of '{}' completed.".format(method_name))
     finally:
         TempDirectory.delete_all()
