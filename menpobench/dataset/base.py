@@ -79,7 +79,7 @@ class TestsetWrapper(object):
     def next(self):
         id_, img = next(self.id_img_gen)
         self.ids.append(id_)
-        self.gt_shapes.append(img.landmarks.pop('gt'))
+        self.gt_shapes.append(img.landmarks.pop('gt').lms)
         return img
 
 

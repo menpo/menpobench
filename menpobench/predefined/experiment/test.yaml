@@ -1,8 +1,8 @@
 training_data:
-    - lfpw_train_ibug_face_68_dlib
+    - lfpw_train_face_ibug_68_dlib
 testing_data:
-    - name: lfpw_test_ibug_face_68_dlib
+    - lfpw_test_face_ibug_68_dlib
 methods:
     - name: aam
-      lm_post_test: ibug_face_68_to_ibug_face_49
+      lm_post_test: face_ibug_68_to_face_ibug_49
 normalization: bounding_box_area
