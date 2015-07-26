@@ -1,0 +1,5 @@
+---
+type: //rec
+required:
+  display_name: //str
+  display_name_short: //str

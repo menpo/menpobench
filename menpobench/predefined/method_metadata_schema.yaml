@@ -1,0 +1,25 @@
+---
+type: //rec
+required:
+  display_name: //str
+  display_name_short: //str
+optional:
+  platform:
+    type: //arr
+    length: { min: 1 }
+    contents:
+      type: //any
+      of:
+        - { type: //str, value: "win32"}
+        - { type: //str, value: "win64"}
+        - { type: //str, value: "linux32"}
+        - { type: //str, value: "linux64"}
+        - { type: //str, value: "osx64"}
+  dependency:
+    type: //arr
+    length: { min: 1 }
+    contents:
+      type: //any
+      of:
+        - { type: //str, value: "matlab"}
+        - { type: //str, value: "somethingelse"}

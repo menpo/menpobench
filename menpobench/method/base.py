@@ -6,7 +6,8 @@ from menpo.visualize import print_progress
 from menpobench import predefined_dir
 from menpobench.imgprocess import menpo_img_process
 from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
-from menpobench.utils import load_module_with_error_messages
+from menpobench.utils import (load_module_with_error_messages, load_schema,
+                              memoize)
 
 
 class BenchResult(object):
@@ -207,3 +208,8 @@ def retrieve_untrainable_method(method_def):
     module = load_module_for_method(name)
     train = getattr(module, 'test')
     return TestMethodLmProcessWrapper(train, lm_pre_test, lm_post_test), name
+
+
+@memoize
+def method_metadata_schema():
+    return load_schema(predefined_dir() / 'method_metadata_schema.yaml')

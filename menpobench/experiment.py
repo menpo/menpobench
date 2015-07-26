@@ -1,6 +1,6 @@
 import pyrx
 from menpobench import predefined_dir
-from menpobench.utils import load_yaml
+from menpobench.utils import load_yaml, load_schema, memoize
 
 
 def predefined_experiment_dir():
@@ -33,17 +33,6 @@ def load_experiment(experiment_name):
     return config
 
 
-SCHEMA = None
-
-
-def _load_schema():
-    global SCHEMA
-    rx = pyrx.Factory({"register_core_types": True})
-    s = load_yaml(predefined_dir() / 'schema.yaml')
-    SCHEMA = rx.make_schema(s)
-
-
-def experiment_is_valid(config):
-    if SCHEMA is None:
-        _load_schema()
-    return SCHEMA.check(config)
+@memoize
+def experiment_schema():
+    return load_schema(predefined_dir() / 'experiment_schema.yaml')

@@ -4,10 +4,11 @@ import shutil
 from menpobench.config import resolve_cache_dir
 from menpobench.dataset import retrieve_datasets
 from menpobench.errormetric import retrieve_error_metrics
-from menpobench.experiment import load_experiment, experiment_is_valid
+from menpobench.experiment import load_experiment, experiment_schema
 from menpobench.method import retrieve_method, retrieve_untrainable_method
 from menpobench.output import save_test_results, save_errors, plot_ceds
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
+from menpobench.schema import schema_error_report, schema_is_valid
 
 
 def invoke_benchmark(experiment_name, output_dir, overwrite=False,
@@ -20,11 +21,12 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
     print(centre_str('cache: {}'.format(resolve_cache_dir())))
     print('')
     # Load the experiment and check it's schematically valid
+    s = experiment_schema()
     c = load_experiment(experiment_name)
-    if not experiment_is_valid(c):
-        raise ValueError("There is some mistake in the schema for experiment "
-                         "'{}'.\nTry commenting out parts of the config to "
-                         "find the problem.".format(experiment_name))
+    if not schema_is_valid(s, c):
+        report = schema_error_report(s, c)
+        raise ValueError("There is an error in the '{}'"
+                         " experiment:\n\n{}".format(experiment_name, report))
     # prepare the error metrics
     error_metrics = retrieve_error_metrics(c['error_metric'])
     # Handle the creation of the output directory

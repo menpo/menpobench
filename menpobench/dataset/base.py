@@ -4,7 +4,8 @@ from functools import partial
 from menpobench import predefined_dir
 from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
 from menpobench.imgprocess import basic_img_process
-from menpobench.utils import load_module_with_error_messages
+from menpobench.utils import (load_module_with_error_messages, load_schema,
+                              memoize)
 from menpo.visualize.textutils import print_dynamic
 
 
@@ -20,8 +21,14 @@ def list_predefined_datasets():
     return sorted([p.stem for p in predefined_dataset_dir().glob('*.py')])
 
 
+@memoize
+def dataset_metadata_schema():
+    return load_schema(predefined_dir() / 'dataset_metadata_schema.yaml')
+
+
 load_module_for_dataset = partial(load_module_with_error_messages,
-                                  'dataset', predefined_dataset_path)
+                                  'dataset', predefined_dataset_path,
+                                  metadata_schema=dataset_metadata_schema())
 
 
 def wrap_dataset_with_processing(id_img_gen, process):

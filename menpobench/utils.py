@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 import yaml
 import json
+import pyrx
 from math import ceil, floor
 from menpo.visualize.textutils import print_progress, bytes_str
 
@@ -94,23 +95,32 @@ def invoke_process(command_list):
     subprocess.check_call(command_list)
 
 
-def load_module_with_error_messages(module_type, predefined_f, name):
-    if name.endswith('.py'):
-        # custom module
+def load_module_with_error_messages(module_type, predefined_f, name,
+                                    metadata_schema=None):
+    custom = name.endswith('.py')
+    template = "custom {} at path '{}'" if custom else "predefined {} '{}'"
+    msg = template.format(module_type, name)
+    path = Path(name) if custom else predefined_f(name)
+    try:
+        module = load_module(path)
+    except IOError:
+        raise ValueError("Requested {} does not exist".format(msg))
+
+    # have a module loaded - has a metadata check been requested?
+    if metadata_schema is not None:
+        print('validating metadata')
+        # Yes - grab the metadata
         try:
-            module = load_module(Path(name))
-            # print("Loaded custom {} from '{}'".format(module_type, name))
-        except IOError:
-            raise ValueError("Requested custom {} at path '{}' "
-                             "does not exist".format(module_type, name))
-    else:
-        # predefined module
-        try:
-            module = load_module(predefined_f(name))
-            # print("Loaded predefined {} '{}'".format(module_type, name))
-        except IOError:
-            raise ValueError("Requested predefined {} '{}' "
-                             "does not exist".format(module_type, name))
+            metadata = getattr(module, 'metadata')
+        except AttributeError:
+            raise ValueError("Required 'metadata' variable for {} "
+                             "is missing".format(msg))
+        else:
+            if not metadata_schema.check(metadata):
+                # there is something incorrect about the metadata - try and
+                # print a helpful message.
+                raise ValueError('Metadata for {} is invalid'.format(msg))
+
     return module
 
 
@@ -145,6 +155,12 @@ def save_json(obj, filepath, pretty=False):
         json.dump(obj, f, **kw)
 
 
+def load_schema(filepath):
+    rx = pyrx.Factory({"register_core_types": True})
+    s = load_yaml(filepath)
+    return rx.make_schema(s)
+
+
 def create_path(f):
     r"""Decorator for functions returning pathlib.Path objects.
     Creates the path if it does not exist.
@@ -157,6 +173,19 @@ def create_path(f):
             print("Path '{}' does not exist - creating...".format(p))
             p.mkdir()
         return p
+
+    return wrapped
+
+
+def memoize(f):
+    r"""Decorator for functions taking no args that need to be memoized.
+    """
+    _namespace = {'result': None}
+
+    def wrapped():
+        if _namespace['result'] is None:
+            _namespace['result'] = f()
+        return _namespace['result']
 
     return wrapped
 

@@ -2,6 +2,7 @@ import menpo.io as mio
 from menpo.landmark.labels import ibug_face_68
 from menpobench.dataset import managed_dataset
 
+metadata = 1
 
 def generate_dataset():
     with managed_dataset('lfpw') as lfpw_path:
