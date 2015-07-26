@@ -69,20 +69,21 @@ def trainset_wrapper(id_img_gen):
         yield img
 
 
-# a single dataset. self.generator provides a generator of (id, image) pairs.
-class Dataset(object):
+# a single dataset. Call provides a generator of (id, image) pairs.
+class DatasetLoader(object):
 
     def __init__(self, module, name, lm_process=None):
         self.module = module
         self.name = name
         # call generate_dataset() in the module to get a generator
-        self.generate_dataset = getattr(module, 'generate_dataset')()
+        self.generate_dataset_f = getattr(module, 'generate_dataset')
         self.lm_process = lm_process
 
+    def __call__(self):
         # we have a hold on the loading function, but we have some base
         # pre-processing that we always perform per-image. Wrap the generator
-        # with the basic pre-processing before we return it.
-        gen = wrap_dataset_with_processing(self.generate_dataset,
+        # with the basic pre-processing
+        gen = wrap_dataset_with_processing(self.generate_dataset_f(),
                                            basic_img_process)
 
         if self.lm_process is not None:
@@ -92,7 +93,7 @@ class Dataset(object):
             img_lm_process = partial(apply_lm_process_to_img, self.lm_process)
             gen = wrap_dataset_with_processing(gen, img_lm_process)
 
-        self.generator = gen
+        return gen
 
 
 # a chain of datasets. self.generator provides a generator of either
@@ -102,14 +103,14 @@ class DatasetChain(object):
     def __init__(self, datasets, test=False):
         self.datasets = datasets
         self.test = test
-        # chain together a list of datasets in a row, reporting the progress as
-        # we go.
-        id_img_gen = print_processing_status(chain(*(d.generator for d in
+
+    def __call__(self):
+        # chain together the datasets, and add process reporting
+        # notice that we invoke each dataset in turn.
+        id_img_gen = print_processing_status(chain(*(d() for d in
                                                      self.datasets)))
-        if self.test:
-            self.generator = TestsetWrapper(id_img_gen)
-        else:
-            self.generator = trainset_wrapper(id_img_gen)
+        return (TestsetWrapper(id_img_gen) if self.test
+                else trainset_wrapper(id_img_gen))
 
     def __str__(self):
         return ', '.join("'{}'".format(d.name) for d in self.datasets)
@@ -127,7 +128,7 @@ def retrieve_dataset(dataset_def):
             lm_process = retrieve_lm_processes(lm_process_def)
 
     module = load_module_for_dataset(name)
-    return Dataset(module, name, lm_process=lm_process)
+    return DatasetLoader(module, name, lm_process=lm_process)
 
 
 def retrieve_datasets(dataset_defs, test=False):
