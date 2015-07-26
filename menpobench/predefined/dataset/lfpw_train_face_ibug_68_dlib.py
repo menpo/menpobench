@@ -3,8 +3,8 @@ from menpo.landmark.labels import ibug_face_68
 from menpobench.dataset import managed_dataset
 
 metadata = {
-    'display_name': 'Labelled Face Parts in the Wild',
-    'display_name_short': 'LFPW'
+    'display_name': 'Labelled Face Parts in the Wild Trainset with iBUG68 landmarks and DLIB bounding boxes',
+    'display_name_short': 'LFPW train'
 }
 
 

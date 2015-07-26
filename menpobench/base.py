@@ -69,24 +69,23 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 # A. Training
                 print(centre_str('training', c='-'))
                 train_set = retrieve_datasets(c['training_data'])
-                print("Training '{}' with {}".format(method_name, ', '.join(
-                    "'{}'".format(d) for d in c['training_data'])))
-                test = train(train_set)
+                print("Training '{}' with {}".format(method_name, train_set))
+                test = train(train_set.generator)
                 print("Training of '{}' completed.".format(method_name))
 
                 # B. Testing
                 print(centre_str('testing', c='-'))
                 test_set = retrieve_datasets(c['testing_data'], test=True)
-                print("Testing '{}' with {}".format(method_name, ', '.join(
-                    "'{}'".format(d) for d in c['testing_data'])))
-                results = test(test_set)
+                print("Testing '{}' with {}".format(method_name, test_set))
+                results = test(test_set.generator)
 
                 # C. Save results
-                results_dict = {i: r for i, r in zip(test_set.ids, results)}
+                results_dict = {i: r for i, r in zip(test_set.generator.ids,
+                                                     results)}
                 save_test_results(results_dict, method_name,
                                   results_methods_dir, matlab=matlab)
-                save_errors(test_set.gt_shapes, results, error_metrics,
-                            method_name, errors_methods_dir)
+                save_errors(test_set.generator.gt_shapes, results,
+                            error_metrics, method_name, errors_methods_dir)
                 print("Testing of '{}' completed.\n".format(method_name))
 
         if 'untrainable_methods' in c:
@@ -105,16 +104,16 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 # A. Testing
                 print(centre_str('testing', c='-'))
                 test_set = retrieve_datasets(c['testing_data'], test=True)
-                print("Testing '{}' with {}".format(method_name, ', '.join(
-                    "'{}'".format(d) for d in c['testing_data'])))
-                results = test(test_set)
+                print("Testing '{}' with {}".format(method_name, test_set))
+                results = test(test_set.generator)
 
                 # B. Save results
-                results_dict = {i: r for i, r in zip(testset.ids, results)}
+                results_dict = {i: r for i, r in zip(test_set.generator.ids,
+                                                     results)}
                 save_test_results(results_dict, method_name,
                                   results_untrainable_dir, matlab=matlab)
-                save_errors(test_set.gt_shapes, results, error_metrics,
-                            method_name, errors_untrainable_dir)
+                save_errors(test_set.generator.gt_shapes, results,
+                            error_metrics, method_name, errors_untrainable_dir)
                 print("Testing of '{}' completed.".format(method_name))
 
         # We now have all the results computed - draw the CED curves.
