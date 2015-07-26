@@ -1,9 +1,10 @@
 from menpobench import predefined_dir
-from menpobench.utils import load_yaml, load_schema, memoize
-from menpobench.schema import schema_error_report, schema_is_valid, SchemaError
 from menpobench.dataset import retrieve_datasets
 from menpobench.errormetric import retrieve_error_metrics
+from menpobench.exception import SchemaError
 from menpobench.method import retrieve_method
+from menpobench.schema import schema_error_report, schema_is_valid
+from menpobench.utils import load_yaml, load_schema, memoize
 
 
 def predefined_experiment_dir():

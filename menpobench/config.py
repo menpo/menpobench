@@ -1,11 +1,8 @@
-from pathlib import Path
 import os
 import platform
+from pathlib import Path
+from menpobench.exception import MissingConfigKeyError
 from menpobench.utils import create_path
-
-
-class BenchMissingConfigError(KeyError):
-    pass
 
 
 def custom_config_path():
@@ -46,7 +43,7 @@ def resolve_cache_dir(verbose=False):
     try:
         cache_dir = Path(load_yaml(config_path)['cache_dir'])
     except KeyError as e:
-        raise BenchMissingConfigError(e.message)
+        raise MissingConfigKeyError(e.message)
     if verbose:
         print('Cache dir: {}'.format(cache_dir))
     # Cache the result so we don't keep querying the rc file

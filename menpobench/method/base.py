@@ -117,8 +117,14 @@ def list_predefined_untrainable_methods():
                    predefined_untrainable_method_dir().glob('*.py')])
 
 
+@memoize
+def method_metadata_schema():
+    return load_schema(predefined_dir() / 'method_metadata_schema.yaml')
+
+
 load_module_for_method = partial(load_module_with_error_messages,
-                                 'method', predefined_method_path)
+                                 'method', predefined_method_path,
+                                 metadata_schema=method_metadata_schema())
 
 load_module_for_untrainable_method = partial(
     load_module_with_error_messages, 'untrainable method',
@@ -216,8 +222,3 @@ def retrieve_untrainable_method(method_def):
     module = load_module_for_method(name)
     train = getattr(module, 'test')
     return TestMethodLmProcessWrapper(train, name, lm_pre_test, lm_post_test)
-
-
-@memoize
-def method_metadata_schema():
-    return load_schema(predefined_dir() / 'method_metadata_schema.yaml')

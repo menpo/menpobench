@@ -25,9 +25,9 @@ from menpobench import (invoke_benchmark, configure_cache_dir,
                         configure_matlab_bin_path)
 from docopt import docopt
 from menpobench.method.matlab.base import resolve_matlab_bin_path
-from menpobench.config import BenchMissingConfigError
 from menpobench.utils import centre_str
-from menpobench.schema import SchemaError, MissingMetadataError
+from menpobench.exception import (ModuleNotFoundError, SchemaError,
+                                  MissingMetadataError, MissingConfigKeyError)
 
 
 def invoke_benchmark_with_config_prompts(*args, **kwargs):
@@ -35,7 +35,7 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
         # TODO: Lazily find Matlab here - this should be fired off by YAML validation
         resolve_matlab_bin_path(verbose=True)
         invoke_benchmark(*args, **kwargs)
-    except BenchMissingConfigError as e:
+    except MissingConfigKeyError as e:
         if e.message == 'cache_dir':
             print('Welcome to menpobench. To start, you will need to choose a directory')
             print('that menpobench can use as a cache.')
@@ -61,17 +61,24 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
             exit(1)
     except SchemaError as e:
         print('')
-        print(centre_str('SCHEMA ERROR'))
+        print(centre_str('-- SCHEMA ERROR --'))
         print('')
         print(e)
         print('\nCorrect this issue and try running menpobench again.')
         exit(1)
     except MissingMetadataError as e:
         print('')
-        print(centre_str('MISSING METADATA ERROR'))
+        print(centre_str('-- MISSING METADATA --'))
         print('')
         print(e)
         print('\nCorrect this issue and try running menpobench again.')
+        exit(1)
+    except ModuleNotFoundError as e:
+        print('')
+        print(centre_str('-- MODULE NOT FOUND --'))
+        print('')
+        print(e)
+        print('Correct this issue and try running menpobench again.')
         exit(1)
     except Exception:
         print('\n')

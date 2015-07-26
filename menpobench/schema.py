@@ -10,42 +10,21 @@ class RxCheckInternalLogicError(ValueError):
     pass
 
 
-class SchemaError(Exception):
-
-    def __init__(self, name, type, report):
-        self.type_ = type
-        self.name = name
-        self.report = report
-
-    def __str__(self):
-        return "The schema for {} {} is invalid:\n{}".format(self.type_,
-                                                             self.name,
-                                                             self.report)
-
-
-class MissingMetadataError(Exception):
-
-    def __init__(self, type):
-        self.type_ = type
-
-    def __str__(self):
-        return "The metadata dict for {} is missing".format(self.type_)
-
-
 def _expected_found_str(e, f):
-    return "expected {}, found {}".format(e, _x(f))
+    return "expected {}, found {}".format(e, _f(f))
 
 
-def _x(x):
+# format single strings with quotes, pass through anything else
+def _f(x):
     return "'{}'".format(x) if isinstance(x, str) else x
 
 
 def _set_str(s):
     if len(s) == 1:
         (item,) = s
-        return _x(item)
+        return _f(item)
     else:
-        return "{{{}}}".format(', '.join([_x(i) for i in s]))
+        return "{{{}}}".format(', '.join([_f(i) for i in s]))
 
 
 def _recursive_check(s, c):
@@ -92,9 +71,9 @@ def _recursive_check(s, c):
         if not isinstance(c, str):
             raise RxParseError(_expected_found_str('str', c))
         if s.value is not None and c != s.value:
-            raise RxParseError("{} != {}".format(_x(c), _x(s.value)))
+            raise RxParseError("{} != {}".format(_f(c), _f(s.value)))
         raise RxParseError("Something wrong with str {} but "
-                           "don't know what".format(_x(c)))
+                           "don't know what".format(_f(c)))
 
     elif isinstance(s, ArrType):
         if not isinstance(c, list):
@@ -122,7 +101,7 @@ def _recursive_check(s, c):
                                                 "found allowed option")
         # we tried all options and none were valid
         raise RxParseError("{} doesn't match allowed "
-                           "values: {}".format(_x(c), ", ".join(errors)))
+                           "values: {}".format(_f(c), ", ".join(errors)))
 
     else:
         print(s)

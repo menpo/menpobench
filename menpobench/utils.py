@@ -13,8 +13,9 @@ import json
 import pyrx
 from math import ceil, floor
 from menpo.visualize.textutils import print_progress, bytes_str
-from menpobench.schema import (schema_error_report, schema_is_valid,
-                               SchemaError, MissingMetadataError)
+from menpobench.schema import schema_error_report, schema_is_valid
+from menpobench.exception import (ModuleNotFoundError, SchemaError,
+                                  MissingMetadataError)
 
 
 def checksum(filepath, blocksize=65536):
@@ -106,11 +107,10 @@ def load_module_with_error_messages(module_type, predefined_f, name,
     try:
         module = load_module(path)
     except IOError:
-        raise ValueError("Requested {} does not exist".format(msg))
+        raise ModuleNotFoundError("Requested {} does not exist".format(msg))
 
     # have a module loaded - has a metadata check been requested?
     if metadata_schema is not None:
-        print('validating metadata')
         # Yes - grab the metadata
         try:
             metadata = getattr(module, 'metadata')
@@ -240,4 +240,3 @@ class TempDirectory(Singleton):
     def delete_all(cls):
         for d in cls._directories:
             shutil.rmtree(str(d), ignore_errors=True)
-
