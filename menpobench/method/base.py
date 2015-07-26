@@ -132,8 +132,9 @@ def wrap_img_gen_with_lm_process(img_gen, lm_process):
 
 class TrainMethodLmProcessWrapper(object):
 
-    def __init__(self, train, lm_pre_train, lm_pre_test, lm_post_test):
+    def __init__(self, train, name, lm_pre_train, lm_pre_test, lm_post_test):
         self.train = train
+        self.name = name
         self.lm_pre_train = lm_pre_train
         self.lm_pre_test = lm_pre_test
         self.lm_post_test = lm_post_test
@@ -147,14 +148,18 @@ class TrainMethodLmProcessWrapper(object):
         test = self.train(img_gen)
         # finally wrap the test method returned with our test landmark process
         # steps
-        return TestMethodLmProcessWrapper(test, self.lm_pre_test,
+        return TestMethodLmProcessWrapper(test, self.name, self.lm_pre_test,
                                           self.lm_post_test)
+
+    def __str__(self):
+        return self.name
 
 
 class TestMethodLmProcessWrapper(object):
 
-    def __init__(self, test, lm_pre_test, lm_post_test):
+    def __init__(self, test, name, lm_pre_test, lm_post_test):
         self.test = test
+        self.name = name
         self.lm_pre_test = lm_pre_test
         self.lm_post_test = lm_post_test
 
@@ -167,6 +172,9 @@ class TestMethodLmProcessWrapper(object):
         if self.lm_post_test is not None:
             results = [r.apply_lm_process(self.lm_post_test) for r in results]
         return results
+
+    def __str__(self):
+        return self.name
 
 
 def retrieve_method(method_def):
@@ -188,8 +196,8 @@ def retrieve_method(method_def):
 
     module = load_module_for_method(name)
     train = getattr(module, 'train')
-    return TrainMethodLmProcessWrapper(train, lm_pre_train, lm_pre_test,
-                                       lm_post_test), name
+    return TrainMethodLmProcessWrapper(train, name, lm_pre_train, lm_pre_test,
+                                       lm_post_test)
 
 
 def retrieve_untrainable_method(method_def):
@@ -207,7 +215,7 @@ def retrieve_untrainable_method(method_def):
 
     module = load_module_for_method(name)
     train = getattr(module, 'test')
-    return TestMethodLmProcessWrapper(train, lm_pre_test, lm_post_test), name
+    return TestMethodLmProcessWrapper(train, name, lm_pre_test, lm_post_test)
 
 
 @memoize

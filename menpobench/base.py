@@ -48,63 +48,59 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
             results_methods_dir.mkdir()
             errors_methods_dir.mkdir()
 
-            for i, m in enumerate(ex.methods, 1):
+            for i, train in enumerate(ex.methods, 1):
 
                 # Retrieval
-                train, method_name = m
                 print(centre_str('{}/{} - {}'.format(i, ex.n_methods,
-                                                     method_name), c='='))
+                                                     train), c='='))
 
                 # A. Training
                 print(centre_str('training', c='-'))
-                print("Training '{}' with {}".format(method_name, ex.training))
-                test = train(ex.training())
-                print("Training of '{}' completed.".format(method_name))
+                print("Training '{}' with {}".format(train, ex.training))
+                train_set = ex.training()
+                test = train(train_set)
+                print("Training of '{}' completed.".format(train))
 
                 # B. Testing
                 print(centre_str('testing', c='-'))
-                print("Testing '{}' with {}".format(method_name, ex.testing))
+                print("Testing '{}' with {}".format(test, ex.testing))
                 test_set = ex.testing()
                 results = test(test_set)
 
                 # C. Save results
                 results_dict = {i: r for i, r in zip(test_set.ids, results)}
-                save_test_results(results_dict, method_name,
+                save_test_results(results_dict, test.name,
                                   results_methods_dir, matlab=matlab)
-                save_errors(test_set.gt_shapes, results,
-                            ex.error_metrics, method_name,
-                            errors_methods_dir)
-                print("Testing of '{}' completed.\n".format(method_name))
+                save_errors(test_set.gt_shapes, results, ex.error_metrics,
+                            test.name, errors_methods_dir)
+                print("Testing of '{}' completed.\n".format(test))
 
         if ex.has_untrainable_methods:
             print(centre_str('II. UNTRAINABLE METHODS', c=' '))
-            n_untrainable_methods = len(ex.untrainable_methods)
             results_untrainable_dir.mkdir()
             errors_untrainable_dir.mkdir()
 
-            for i, m in enumerate(ex.untrainable_methods, 1):
+            for i, test in enumerate(ex.untrainable_methods, 1):
 
                 # Retrieval
-                test, method_name = m
                 print(centre_str('{}/{} - {}'.format(i,
                                                      ex.n_untrainable_methods,
-                                                     method_name), c='='))
+                                                     test), c='='))
 
                 # A. Testing
                 print(centre_str('testing', c='-'))
                 test_set = ex.load_testing_data()
-                print("Testing '{}' with {}".format(method_name, test_set))
-                results = test(test_set.generator)
+                print("Testing '{}' with {}".format(test, test_set))
+                results = test(test_set)
 
                 # B. Save results
                 results_dict = {i: r for i, r in zip(test_set.generator.ids,
                                                      results)}
-                save_test_results(results_dict, method_name,
+                save_test_results(results_dict, test.name,
                                   results_untrainable_dir, matlab=matlab)
-                save_errors(test_set.generator.gt_shapes, results,
-                            ex.error_metrics, method_name,
-                            errors_untrainable_dir)
-                print("Testing of '{}' completed.".format(method_name))
+                save_errors(test_set.gt_shapes, results, ex.error_metrics,
+                            test.name, errors_untrainable_dir)
+                print("Testing of '{}' completed.".format(test))
 
         # We now have all the results computed - draw the CED curves.
         plot_ceds(output_dir)
