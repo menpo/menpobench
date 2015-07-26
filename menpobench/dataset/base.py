@@ -72,9 +72,10 @@ def trainset_wrapper(id_img_gen):
 # a single dataset. Call provides a generator of (id, image) pairs.
 class DatasetLoader(object):
 
-    def __init__(self, module, name, lm_process=None):
+    def __init__(self, module, name, metadata, lm_process=None):
         self.module = module
         self.name = name
+        self.metadata = metadata
         # call generate_dataset() in the module to get a generator
         self.generate_dataset_f = getattr(module, 'generate_dataset')
         self.lm_process = lm_process
@@ -127,8 +128,8 @@ def retrieve_dataset(dataset_def):
             # user is specifying some landmark processing
             lm_process = retrieve_lm_processes(lm_process_def)
 
-    module = load_module_for_dataset(name)
-    return DatasetLoader(module, name, lm_process=lm_process)
+    module, metadata = load_module_for_dataset(name)
+    return DatasetLoader(module, name, metadata, lm_process=lm_process)
 
 
 def retrieve_datasets(dataset_defs, test=False):

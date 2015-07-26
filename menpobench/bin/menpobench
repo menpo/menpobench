@@ -24,7 +24,6 @@ import traceback
 from menpobench import (invoke_benchmark, configure_cache_dir,
                         configure_matlab_bin_path)
 from docopt import docopt
-from menpobench.method.matlab.base import resolve_matlab_bin_path
 from menpobench.utils import centre_str
 from menpobench.exception import (ModuleNotFoundError, SchemaError,
                                   MissingMetadataError, MissingConfigKeyError)
@@ -32,8 +31,6 @@ from menpobench.exception import (ModuleNotFoundError, SchemaError,
 
 def invoke_benchmark_with_config_prompts(*args, **kwargs):
     try:
-        # TODO: Lazily find Matlab here - this should be fired off by YAML validation
-        resolve_matlab_bin_path(verbose=True)
         invoke_benchmark(*args, **kwargs)
     except MissingConfigKeyError as e:
         if e.message == 'cache_dir':
@@ -46,6 +43,7 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
             # now we have a cache dir, re-run
             invoke_benchmark_with_config_prompts(*args, **kwargs)
         elif e.message == 'matlab_bin_path':
+            print('One of the methods you are testing requires matlab.')
             print('To use a Matlab method you must have installed and '
                   'configured Matlab correctly.')
             print('menpobench was unable to automatically find the Matlab executable '

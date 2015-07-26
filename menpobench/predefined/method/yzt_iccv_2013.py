@@ -4,7 +4,8 @@ from menpobench.method import (save_images_to_dir, save_landmarks_to_dir,
 
 metadata = {
     'display_name': 'YZT AAM (ICCV 2013)',
-    'dispxlay_name_short': 'YZT AAM'
+    'display_name_short': 'YZT AAM',
+    'dependencies': ['matlab']
 }
 
 

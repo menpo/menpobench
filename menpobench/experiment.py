@@ -59,28 +59,34 @@ class Experiment(object):
             if 'training_data' not in c:
                 raise ValueError('Trying to test trainable methods but no '
                                  'training_data was provided')
-            self.methods = [retrieve_method(m) for m in c['methods']]
+            self.trainable_methods = [retrieve_method(m) for m in c['methods']]
+        else:
+            self.trainable_methods = []
 
         if 'untrainable_methods' in c:
             self.untrainable_methods = [retrieve_method(m)
                                         for m in c['untrainable_methods']]
+        else:
+            self.untrainable_methods = []
 
     @property
-    def has_methods(self):
-        return hasattr(self, 'methods')
+    def all_methods(self):
+        return self.trainable_methods + self.untrainable_methods
 
     @property
-    def has_untrainable_methods(self):
-        return hasattr(self, 'untrainable_methods')
-
-    @property
-    def n_methods(self):
-        return len(self.methods) if self.has_methods else 0
+    def n_trainable_methods(self):
+        return len(self.trainable_methods)
 
     @property
     def n_untrainable_methods(self):
-        return (len(self.untrainable_methods)
-                if self.has_untrainable_methods else 0)
+        return len(self.untrainable_methods)
+
+    @property
+    def depends_on_matlab(self):
+        for m in self.all_methods:
+            if m.depends_on_matlab:
+                return True
+        return False
 
 
 @memoize

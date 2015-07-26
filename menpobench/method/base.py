@@ -128,7 +128,8 @@ load_module_for_method = partial(load_module_with_error_messages,
 
 load_module_for_untrainable_method = partial(
     load_module_with_error_messages, 'untrainable method',
-    predefined_untrainable_method_path)
+    predefined_untrainable_method_path,
+    metadata_schema=method_metadata_schema())
 
 
 def wrap_img_gen_with_lm_process(img_gen, lm_process):
@@ -136,11 +137,30 @@ def wrap_img_gen_with_lm_process(img_gen, lm_process):
         yield apply_lm_process_to_img(lm_process, img)
 
 
-class TrainMethodLmProcessWrapper(object):
+class Method(object):
 
-    def __init__(self, train, name, lm_pre_train, lm_pre_test, lm_post_test):
-        self.train = train
+    def __init__(self, name, metadata):
         self.name = name
+        self.metadata = metadata
+
+    @property
+    def dependencies(self):
+        return self.metadata.get('dependencies', [])
+
+    @property
+    def depends_on_matlab(self):
+        return 'matlab' in self.dependencies
+
+    def __str__(self):
+        return self.name
+
+
+class Train(Method):
+
+    def __init__(self, train, name, metadata, lm_pre_train, lm_pre_test,
+                 lm_post_test):
+        super(Train, self).__init__(name, metadata)
+        self.train = train
         self.lm_pre_train = lm_pre_train
         self.lm_pre_test = lm_pre_test
         self.lm_post_test = lm_post_test
@@ -154,18 +174,15 @@ class TrainMethodLmProcessWrapper(object):
         test = self.train(img_gen)
         # finally wrap the test method returned with our test landmark process
         # steps
-        return TestMethodLmProcessWrapper(test, self.name, self.lm_pre_test,
-                                          self.lm_post_test)
-
-    def __str__(self):
-        return self.name
+        return Test(test, self.name, self.metadata, self.lm_pre_test,
+                    self.lm_post_test)
 
 
-class TestMethodLmProcessWrapper(object):
+class Test(Method):
 
-    def __init__(self, test, name, lm_pre_test, lm_post_test):
+    def __init__(self, test, name, metadata, lm_pre_test, lm_post_test):
+        super(Test, self).__init__(name, metadata)
         self.test = test
-        self.name = name
         self.lm_pre_test = lm_pre_test
         self.lm_post_test = lm_post_test
 
@@ -178,9 +195,6 @@ class TestMethodLmProcessWrapper(object):
         if self.lm_post_test is not None:
             results = [r.apply_lm_process(self.lm_post_test) for r in results]
         return results
-
-    def __str__(self):
-        return self.name
 
 
 def retrieve_method(method_def):
@@ -200,10 +214,10 @@ def retrieve_method(method_def):
         if lm_pre_train_def is not None:
             lm_pre_train = retrieve_lm_processes(lm_pre_train_def)
 
-    module = load_module_for_method(name)
+    module, metadata = load_module_for_method(name)
     train = getattr(module, 'train')
-    return TrainMethodLmProcessWrapper(train, name, lm_pre_train, lm_pre_test,
-                                       lm_post_test)
+    return Train(train, name, metadata, lm_pre_train, lm_pre_test,
+                 lm_post_test)
 
 
 def retrieve_untrainable_method(method_def):
@@ -219,6 +233,6 @@ def retrieve_untrainable_method(method_def):
         if lm_post_test_def is not None:
             lm_post_test = retrieve_lm_processes(lm_post_test_def)
 
-    module = load_module_for_method(name)
-    train = getattr(module, 'test')
-    return TestMethodLmProcessWrapper(train, name, lm_pre_test, lm_post_test)
+    module, metadata = load_module_for_untrainable_method(name)
+    test = getattr(module, 'test')
+    return Test(test, name, metadata, lm_pre_test, lm_post_test)

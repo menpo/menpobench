@@ -122,8 +122,10 @@ def load_module_with_error_messages(module_type, predefined_f, name,
                 # print a helpful message.
                 report = schema_error_report(metadata_schema, metadata)
                 raise SchemaError('metadata', msg, report)
-
-    return module
+            else:
+                return module, metadata
+    else:
+        return module
 
 
 def norm_path(filepath):

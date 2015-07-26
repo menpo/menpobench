@@ -5,7 +5,7 @@ from menpobench.config import resolve_cache_dir
 from menpobench.experiment import retrieve_experiment
 from menpobench.output import save_test_results, save_errors, plot_ceds
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
-
+from menpobench.method.matlab.base import resolve_matlab_bin_path
 
 def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                      matlab=False):
@@ -15,9 +15,15 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
     print(centre_str('config: {}'.format(experiment_name)))
     print(centre_str('output: {}'.format(output_dir)))
     print(centre_str('cache: {}'.format(resolve_cache_dir())))
-    print('')
+
     # Load the experiment and check it's schematically valid
     ex = retrieve_experiment(experiment_name)
+
+    # Check if we have any dependency on matlab
+    if ex.depends_on_matlab:
+        print(centre_str('matlab: {}'.format(resolve_matlab_bin_path())))
+
+    print('')
     # Handle the creation of the output directory
     output_dir = Path(norm_path(output_dir))
     if output_dir.is_dir():
@@ -43,15 +49,15 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
     # Loop over all requested methods, training and testing them.
     # Note that methods are, by definition trainable.
     try:
-        if ex.has_methods:
+        if ex.n_trainable_methods > 0:
             print(centre_str('I. TRAINABLE METHODS'))
             results_methods_dir.mkdir()
             errors_methods_dir.mkdir()
 
-            for i, train in enumerate(ex.methods, 1):
+            for i, train in enumerate(ex.trainable_methods, 1):
 
                 # Retrieval
-                print(centre_str('{}/{} - {}'.format(i, ex.n_methods,
+                print(centre_str('{}/{} - {}'.format(i, ex.n_trainable_methods,
                                                      train), c='='))
 
                 # A. Training
@@ -75,7 +81,7 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                             test.name, errors_methods_dir)
                 print("Testing of '{}' completed.\n".format(test))
 
-        if ex.has_untrainable_methods:
+        if ex.n_untrainable_methods > 0:
             print(centre_str('II. UNTRAINABLE METHODS', c=' '))
             results_untrainable_dir.mkdir()
             errors_untrainable_dir.mkdir()

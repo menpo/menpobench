@@ -6,7 +6,7 @@ methods:
     - name: aam
       lm_post_test: [face_ibug_68_to_face_ibug_49]
     - aam
-    - yzt_iccv_2013
+#    - yzt_iccv_2013
 error_metric:
   - euclidean
   - face_area_ibug_68

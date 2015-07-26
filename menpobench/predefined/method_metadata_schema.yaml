@@ -15,11 +15,10 @@ optional:
         - { type: //str, value: "linux32"}
         - { type: //str, value: "linux64"}
         - { type: //str, value: "osx64"}
-  dependency:
+  dependencies:
     type: //arr
     length: { min: 1 }
     contents:
       type: //any
       of:
         - { type: //str, value: "matlab"}
-        - { type: //str, value: "somethingelse"}
