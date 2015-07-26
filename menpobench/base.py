@@ -8,7 +8,7 @@ from menpobench.experiment import load_experiment, experiment_schema
 from menpobench.method import retrieve_method, retrieve_untrainable_method
 from menpobench.output import save_test_results, save_errors, plot_ceds
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
-from menpobench.schema import schema_error_report, schema_is_valid
+from menpobench.schema import schema_error_report, schema_is_valid, SchemaError
 
 
 def invoke_benchmark(experiment_name, output_dir, overwrite=False,
@@ -25,8 +25,7 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
     c = load_experiment(experiment_name)
     if not schema_is_valid(s, c):
         report = schema_error_report(s, c)
-        raise ValueError("There is an error in the '{}'"
-                         " experiment:\n\n{}".format(experiment_name, report))
+        raise SchemaError(experiment_name, "experiment", report)
     # prepare the error metrics
     error_metrics = retrieve_error_metrics(c['error_metric'])
     # Handle the creation of the output directory

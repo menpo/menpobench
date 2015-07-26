@@ -13,6 +13,8 @@ import json
 import pyrx
 from math import ceil, floor
 from menpo.visualize.textutils import print_progress, bytes_str
+from menpobench.schema import (schema_error_report, schema_is_valid,
+                               SchemaError, MissingMetadataError)
 
 
 def checksum(filepath, blocksize=65536):
@@ -113,13 +115,13 @@ def load_module_with_error_messages(module_type, predefined_f, name,
         try:
             metadata = getattr(module, 'metadata')
         except AttributeError:
-            raise ValueError("Required 'metadata' variable for {} "
-                             "is missing".format(msg))
+            raise MissingMetadataError(msg)
         else:
-            if not metadata_schema.check(metadata):
+            if not schema_is_valid(metadata_schema, metadata):
                 # there is something incorrect about the metadata - try and
                 # print a helpful message.
-                raise ValueError('Metadata for {} is invalid'.format(msg))
+                report = schema_error_report(metadata_schema, metadata)
+                raise SchemaError('metadata', msg, report)
 
     return module
 

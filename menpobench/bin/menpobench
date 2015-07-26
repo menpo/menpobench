@@ -27,6 +27,7 @@ from docopt import docopt
 from menpobench.method.matlab.base import resolve_matlab_bin_path
 from menpobench.config import BenchMissingConfigError
 from menpobench.utils import centre_str
+from menpobench.schema import SchemaError, MissingMetadataError
 
 
 def invoke_benchmark_with_config_prompts(*args, **kwargs):
@@ -58,7 +59,21 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
         else:
             print('Unexpected missing config value: {}'.format(e))
             exit(1)
-    except Exception as e:
+    except SchemaError as e:
+        print('')
+        print(centre_str('SCHEMA ERROR'))
+        print('')
+        print(e)
+        print('\nCorrect this issue and try running menpobench again.')
+        exit(1)
+    except MissingMetadataError as e:
+        print('')
+        print(centre_str('MISSING METADATA ERROR'))
+        print('')
+        print(e)
+        print('\nCorrect this issue and try running menpobench again.')
+        exit(1)
+    except Exception:
         print('\n')
         print(centre_str('ERROR', c='!'))
         print(centre_str('-- menpobench has encountered an unrecoverable error --'))

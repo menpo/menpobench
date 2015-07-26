@@ -2,7 +2,11 @@ import menpo.io as mio
 from menpo.landmark.labels import ibug_face_68
 from menpobench.dataset import managed_dataset
 
-metadata = 1
+metadata = {
+    'display_name': 'Labelled Face Parts in the Wild',
+    'display_name_short': 'LFPW'
+}
+
 
 def generate_dataset():
     with managed_dataset('lfpw') as lfpw_path:

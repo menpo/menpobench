@@ -4,7 +4,7 @@ testing_data:
     - lfpw_test_face_ibug_68_dlib
 methods:
     - name: aam
-      lm_post_test: face_ibug_68_to_face_ibug_49
+      lm_post_test: [face_ibug_68_to_face_ibug_49]
     - aam
 error_metric:
   - euclidean
