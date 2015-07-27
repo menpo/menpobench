@@ -7,6 +7,7 @@ from menpobench.output import save_test_results, save_errors, plot_ceds
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 from menpobench.method.matlab.base import resolve_matlab_bin_path
 
+
 def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                      matlab=False):
     print('')
