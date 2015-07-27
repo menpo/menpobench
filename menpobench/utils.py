@@ -245,3 +245,9 @@ class TempDirectory(Singleton):
     def delete_all(cls):
         for d in cls._directories:
             shutil.rmtree(str(d), ignore_errors=True)
+
+
+# wrap a generator with a function that is invoked per-item
+def wrap_generator(generator, f):
+    for x in generator:
+        yield f(x)
