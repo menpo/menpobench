@@ -20,7 +20,7 @@ setup(name='menpobench',
                                    'predefined/method/*.py',
                                    'predefined/landmark_process/*.py',
                                    'predefined/experiment/*.yaml',
-                                   'predefined/schema.yaml']},
+                                   'predefined/*schema.yaml']},
       tests_require=['nose'],
       scripts=[os.path.join('menpobench', 'bin', 'menpobench')],
       install_requires=install_requires)
