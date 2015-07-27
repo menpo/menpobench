@@ -41,10 +41,7 @@ class Experiment(object):
 
     def __init__(self, c):
         # Load the experiment and check it's schematically valid
-        s = experiment_schema()
-        if not schema_is_valid(s, c):
-            report = schema_error_report(s, c)
-            raise SchemaError(c, "experiment", report)
+        validate_experiment_def(c)
 
         self.config = c
 
@@ -92,3 +89,15 @@ class Experiment(object):
 @memoize
 def experiment_schema():
     return load_schema(predefined_dir() / 'experiment_schema.yaml')
+
+
+def validate_experiment_def(config):
+    s = experiment_schema()
+    if not schema_is_valid(s, config):
+        report = schema_error_report(s, config)
+        raise SchemaError(config, "experiment", report)
+
+
+def validate_predefined_experiment(name):
+    config = load_yaml(predefined_experiment_path(name))
+    validate_experiment_def(config)

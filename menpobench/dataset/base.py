@@ -1,3 +1,4 @@
+from inspect import isgeneratorfunction
 from itertools import chain
 from functools import partial
 
@@ -26,9 +27,25 @@ def dataset_metadata_schema():
     return load_schema(predefined_dir() / 'dataset_metadata_schema.yaml')
 
 
-load_module_for_dataset = partial(load_module_with_error_messages,
-                                  'dataset', predefined_dataset_path,
-                                  metadata_schema=dataset_metadata_schema())
+_load_dataset_module = partial(load_module_with_error_messages,
+                               'dataset', predefined_dataset_path,
+                               metadata_schema=dataset_metadata_schema())
+
+
+def load_and_validate_dataset_module(name):
+    # loading a dataset validates the metadata
+    module, metadata = _load_dataset_module(name)
+    try:
+        generate_dataset = getattr(module, 'generate_dataset')
+    except AttributeError:
+        raise AttributeError("dataset module '{}' doesn't "
+                             "include a 'generate_dataset' generator "
+                             "function".format(name))
+    if not isgeneratorfunction(generate_dataset):
+        raise AttributeError("dataset module '{} includes a "
+                             "'generate_dataset' attribute, but it isn't a "
+                             "generator function".format(name))
+    return generate_dataset, metadata
 
 
 def wrap_dataset_with_processing(id_img_gen, process):
@@ -72,19 +89,17 @@ def trainset_wrapper(id_img_gen):
 # a single dataset. Call provides a generator of (id, image) pairs.
 class DatasetLoader(object):
 
-    def __init__(self, module, name, metadata, lm_process=None):
-        self.module = module
+    def __init__(self, dataset_gen_f, name, metadata, lm_process=None):
         self.name = name
         self.metadata = metadata
-        # call generate_dataset() in the module to get a generator
-        self.generate_dataset_f = getattr(module, 'generate_dataset')
+        self.dataset_gen_f = dataset_gen_f
         self.lm_process = lm_process
 
     def __call__(self):
         # we have a hold on the loading function, but we have some base
         # pre-processing that we always perform per-image. Wrap the generator
         # with the basic pre-processing
-        gen = wrap_dataset_with_processing(self.generate_dataset_f(),
+        gen = wrap_dataset_with_processing(self.dataset_gen_f(),
                                            basic_img_process)
 
         if self.lm_process is not None:
@@ -128,8 +143,8 @@ def retrieve_dataset(dataset_def):
             # user is specifying some landmark processing
             lm_process = retrieve_lm_processes(lm_process_def)
 
-    module, metadata = load_module_for_dataset(name)
-    return DatasetLoader(module, name, metadata, lm_process=lm_process)
+    dataset_gen_f, metadata = load_and_validate_dataset_module(name)
+    return DatasetLoader(dataset_gen_f, name, metadata, lm_process=lm_process)
 
 
 def retrieve_datasets(dataset_defs, test=False):

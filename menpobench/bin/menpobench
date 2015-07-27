@@ -8,6 +8,7 @@ path to a .yaml experiment configuration file.
 Usage:
   menpobench run <experiment_config> [--output <dir>] [--overwrite] [--mat]
   menpobench list
+  menpobench test [-v]
   menpobench (-h | --help)
   menpobench --version
 
@@ -27,6 +28,7 @@ from docopt import docopt
 from menpobench.utils import centre_str
 from menpobench.exception import (ModuleNotFoundError, SchemaError,
                                   MissingMetadataError, MissingConfigKeyError)
+from menpobench.test import run_test_suite
 
 
 def invoke_benchmark_with_config_prompts(*args, **kwargs):
@@ -112,3 +114,5 @@ if __name__ == '__main__':
                                              a['--output'],
                                              overwrite=a['--overwrite'],
                                              matlab=a['--mat'])
+    elif a['test']:
+        print(run_test_suite(verbose=a['-v']))

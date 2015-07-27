@@ -122,14 +122,42 @@ def method_metadata_schema():
     return load_schema(predefined_dir() / 'method_metadata_schema.yaml')
 
 
-load_module_for_method = partial(load_module_with_error_messages,
-                                 'method', predefined_method_path,
-                                 metadata_schema=method_metadata_schema())
+_load_trainable_method_module = partial(load_module_with_error_messages,
+                              'method', predefined_method_path,
+                              metadata_schema=method_metadata_schema())
 
-load_module_for_untrainable_method = partial(
+_load_untrainable_method_module = partial(
     load_module_with_error_messages, 'untrainable method',
     predefined_untrainable_method_path,
     metadata_schema=method_metadata_schema())
+
+
+def load_and_validate_untrainable_method_module(name):
+    module, metadata = _load_untrainable_method_module(name)
+    try:
+        test = getattr(module, 'test')
+    except AttributeError:
+        raise AttributeError("untrainable method module '{}' doesn't "
+                             "include a 'test' callable".format(name))
+    if not callable(test):
+        raise AttributeError("untrainable method module '{} includes a "
+                             "'test' attribute, but it isn't a "
+                             "callable".format(name))
+    return test, metadata
+
+
+def load_and_validate_trainable_method_module(name):
+    module, metadata = _load_trainable_method_module(name)
+    try:
+        train = getattr(module, 'train')
+    except AttributeError:
+        raise AttributeError("trainable method module '{}' doesn't "
+                             "include a 'train' callable".format(name))
+    if not callable(train):
+        raise AttributeError("trainable method module '{} includes a "
+                             "'train' attribute, but it isn't a "
+                             "callable".format(name))
+    return train, metadata
 
 
 def wrap_img_gen_with_lm_process(img_gen, lm_process):
@@ -214,8 +242,7 @@ def retrieve_method(method_def):
         if lm_pre_train_def is not None:
             lm_pre_train = retrieve_lm_processes(lm_pre_train_def)
 
-    module, metadata = load_module_for_method(name)
-    train = getattr(module, 'train')
+    train, metadata = load_and_validate_trainable_method_module(name)
     return Train(train, name, metadata, lm_pre_train, lm_pre_test,
                  lm_post_test)
 
@@ -233,6 +260,5 @@ def retrieve_untrainable_method(method_def):
         if lm_post_test_def is not None:
             lm_post_test = retrieve_lm_processes(lm_post_test_def)
 
-    module, metadata = load_module_for_untrainable_method(name)
-    test = getattr(module, 'test')
+    test, metadata = load_and_validate_untrainable_method_module(name)
     return Test(test, name, metadata, lm_pre_test, lm_post_test)
