@@ -3,7 +3,10 @@ import subprocess
 import tarfile
 import tempfile
 import shutil
-import urllib2
+try:
+    from urllib2 import urlopen  # Py2
+except ImportError:
+    from urllib.request import urlopen  # Py3
 import imp
 import os
 import zipfile
@@ -45,7 +48,7 @@ def download_file(url, dest_path):
     r"""
     Download a file to a path, reporting the progress with a progress bar
     """
-    req = urllib2.urlopen(url)
+    req = urlopen(url)
     n_bytes = int(req.headers['content-length'])
     chunk_size_bytes = 512 * 1024
     n_items = int(ceil((1.0 * n_bytes) / chunk_size_bytes))
