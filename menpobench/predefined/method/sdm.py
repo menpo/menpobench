@@ -14,7 +14,8 @@ def train(img_generator):
     images = [menpo_img_process(img) for img in img_generator]
     fitter = SDMTrainer(normalization_diagonal=150,
                         downscale=1.1,
-                        n_perturbations=15).train(images, verbose=True)
+                        n_perturbations=15).train(images, group='gt',
+                                                  verbose=True)
 
     # return a callable that wraps the menpo fitter in order to integrate with
     # menpobench
