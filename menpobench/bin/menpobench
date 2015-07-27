@@ -6,8 +6,8 @@
 path to a .yaml experiment configuration file.
 
 Usage:
-  menpobench <experiment_config> [--output <dir>] [--overwrite] [--mat]
-  menpobench --list
+  menpobench run <experiment_config> [--output <dir>] [--overwrite] [--mat]
+  menpobench list
   menpobench (-h | --help)
   menpobench --version
 
@@ -105,9 +105,9 @@ def list_all_predefined():
 if __name__ == '__main__':
     a = docopt(__doc__,
                version='menpobench v{}'.format(menpobench.__version__))
-    if a['--list']:
+    if a['list']:
         list_all_predefined()
-    else:
+    elif a['run']:
         invoke_benchmark_with_config_prompts(a['<experiment_config>'],
                                              a['--output'],
                                              overwrite=a['--overwrite'],
