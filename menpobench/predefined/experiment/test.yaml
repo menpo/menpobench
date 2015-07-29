@@ -4,8 +4,6 @@ testing_data:
     - lfpw_test_face_ibug_68_dlib
 methods:
     - aam
-    - sdm
-#    - yzt_iccv_2013
 error_metric:
   - euclidean
   - face_area_ibug_68

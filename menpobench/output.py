@@ -1,6 +1,9 @@
 from pathlib import Path
 from menpobench.utils import save_json, load_json
 from collections import namedtuple
+import numpy as np
+from menpofit.fittingresult import plot_cumulative_error_distribution
+from matplotlib import pyplot as plt
 
 ErrorResult = namedtuple('ErrorResult', ['errors', 'path'])
 
@@ -28,18 +31,25 @@ def save_errors(gt_shapes, results, error_metrics, method_name, output_dir):
 def plot_ceds(output_dir):
     results = [ErrorResult(load_json(e), e)
                for e in (output_dir / 'errors').glob('**/*.json')]
-    if _unique_stems([r.path for r in results]):
-        # method names are unique across
-        pass
-    #
     metrics = results[0].errors.keys()
     for metric in metrics:
-        pass
+        errors, method_names = [], []
+        for result in results:
+            method_names.append(result.path.stem)
+            errors.append(np.array(result.errors[metric]))
+        plot_ced(errors, method_names, metric, output_dir)
 
-
-def plot_ced(methods_to_errors, error_metric_name, output_dir):
+def plot_ced(errors, method_names, error_metric_name, output_dir):
     # plot the ced and store it at the root.
-    pass
+    print('plotting CED for {}'.format(error_metric_name))
+    print(errors)
+    plot_cumulative_error_distribution(errors, legend_entries=method_names,
+                                       error_range=(0, 0.05, 0.005))
+    ax = plt.gca()
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])
+    plt.savefig(str(output_dir / '{}.pdf'.format(error_metric_name)))
+    plt.clf()
 
 
 def _unique_stems(paths):
