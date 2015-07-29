@@ -4,5 +4,6 @@ testing_data:
     - lfpw_test_face_ibug_68_dlib
 methods:
     - aam
+    - sdm
 error_metric:
   - face_size

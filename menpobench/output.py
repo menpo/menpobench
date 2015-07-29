@@ -40,10 +40,9 @@ def plot_ceds(output_dir):
 
 def plot_ced(errors, method_names, error_metric_name, output_dir):
     # plot the ced and store it at the root.
-    print('plotting CED for {}'.format(error_metric_name))
-    print(errors)
     plot_cumulative_error_distribution(errors, legend_entries=method_names,
                                        error_range=(0, 0.05, 0.005))
+    # shift the main graph to make room for the legend
     ax = plt.gca()
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])
