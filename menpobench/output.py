@@ -1,7 +1,6 @@
 from pathlib import Path
 from menpobench.utils import save_json, load_json
 from collections import namedtuple
-import numpy as np
 from menpofit.fittingresult import plot_cumulative_error_distribution
 from matplotlib import pyplot as plt
 
@@ -36,7 +35,7 @@ def plot_ceds(output_dir):
         errors, method_names = [], []
         for result in results:
             method_names.append(result.path.stem)
-            errors.append(np.array(result.errors[metric]))
+            errors.append(result.errors[metric])
         plot_ced(errors, method_names, metric, output_dir)
 
 def plot_ced(errors, method_names, error_metric_name, output_dir):

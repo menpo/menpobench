@@ -17,7 +17,8 @@ def train(img_generator):
     aam = AAMBuilder(features=fast_dsift,
                      normalization_diagonal=120).build(images, verbose=True,
                                                        group='gt')
-    fitter = LucasKanadeAAMFitter(aam, n_shape=0.9, n_appearance=0.9)
+    fitter = LucasKanadeAAMFitter(aam, n_shape=[3, 6, 12],
+                                  n_appearance=0.9)
 
     # return a callable that wraps the menpo fitter in order to integrate with
     # menpobench

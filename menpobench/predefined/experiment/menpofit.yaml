@@ -5,5 +5,4 @@ testing_data:
 methods:
     - aam
 error_metric:
-  - euclidean
-  - face_area_ibug_68
+  - face_size

@@ -1,5 +1,4 @@
-import numpy as np
-
+from menpobench.errormetric import mean_error
 
 def error_metric(gt, final):
-    return np.sqrt(np.sum((gt.points - final.points) ** 2, axis=-1)).mean()
+    return mean_error(gt, final)

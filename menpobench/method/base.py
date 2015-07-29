@@ -47,8 +47,11 @@ class MenpoFitWrapper(object):
         results = []
         ref_shape = self.fitter.reference_shape
         for img in img_generator:
-            img = menpo_img_process(img)
-            # obtain ground truth (original) landmarks
+            # note that we don't want to crop the image in our preprocessing
+            # that's because the gt on the image we are passed is what will
+            # be used for assessment - we will introduce large errors if this
+            # is modified in size.
+            img = menpo_img_process(img, crop=False)
             bbox = img.landmarks['bbox'].lms
             shape_bb = ref_shape.bounding_box()
             init_shape = AlignmentSimilarity(shape_bb, bbox).apply(ref_shape)
