@@ -9,6 +9,7 @@ Usage:
   menpobench run <experiment_config> [--output <dir>] [--overwrite] [--mat]
   menpobench list
   menpobench test [-v]
+  menpobench config <config_key> <config_value>
   menpobench (-h | --help)
   menpobench --version
 
@@ -25,6 +26,7 @@ import traceback
 from menpobench import (invoke_benchmark, configure_cache_dir,
                         configure_matlab_bin_path)
 from docopt import docopt
+from menpobench.config import save_custom_config
 from menpobench.utils import centre_str
 from menpobench.exception import (ModuleNotFoundError, SchemaError,
                                   MissingMetadataError, MissingConfigKeyError)
@@ -104,6 +106,17 @@ def list_all_predefined():
                      }, default_flow_style=False))
 
 
+def update_config(key, value):
+    try:
+        save_custom_config({key: value})
+    except SchemaError as e:
+        print(e)
+        print('Due to this, user configuration file was not updated.')
+        exit(1)
+    else:
+        print('Successfully updated {} to {} in config'.format(key, value))
+
+
 if __name__ == '__main__':
     a = docopt(__doc__,
                version='menpobench v{}'.format(menpobench.__version__))
@@ -116,3 +129,5 @@ if __name__ == '__main__':
                                              matlab=a['--mat'])
     elif a['test']:
         print(run_test_suite(verbose=a['-v']))
+    elif a['config']:
+        update_config(a['<config_key>'], a['<config_value>'])

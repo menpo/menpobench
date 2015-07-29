@@ -1,0 +1,6 @@
+---
+type: //rec
+required:
+  cache_dir: //str
+optional:
+  matlab_bin_path: //str

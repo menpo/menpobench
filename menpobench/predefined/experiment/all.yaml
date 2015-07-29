@@ -5,5 +5,6 @@ testing_data:
 methods:
     - aam
     - sdm
+    - yzt_iccv_2013
 error_metric:
   - face_size
