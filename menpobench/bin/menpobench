@@ -94,12 +94,12 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
 def list_all_predefined():
     from menpobench.experiment import list_predefined_experiments
     from menpobench.dataset import list_predefined_datasets
-    from menpobench.method import (list_predefined_methods,
+    from menpobench.method import (list_predefined_trainable_methods,
                                    list_predefined_untrainable_methods)
     from menpobench.lmprocess import list_predefined_lm_processes
     import yaml
     print(yaml.dump({'datasets': list_predefined_datasets(),
-                     'methods': list_predefined_methods(),
+                     'methods': list_predefined_trainable_methods(),
                      'untrainable_methods': list_predefined_untrainable_methods(),
                      'experiments': list_predefined_experiments(),
                      'landmark_processes': list_predefined_lm_processes()

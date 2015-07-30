@@ -3,7 +3,7 @@ import sys
 from menpobench.experiment import list_predefined_experiments
 from menpobench.dataset import list_predefined_datasets
 from menpobench.method import (list_predefined_untrainable_methods,
-                               list_predefined_methods)
+                               list_predefined_trainable_methods)
 from menpobench.utils import TempDirectory
 
 
@@ -42,7 +42,7 @@ def generate_test_suite():
     ts = []
     ts.extend([EXPERIMENT.format(x) for x in list_predefined_experiments()])
     ts.extend([DATASET.format(x) for x in list_predefined_datasets()])
-    ts.extend([TRAINABLE_METHOD.format(x) for x in list_predefined_methods()])
+    ts.extend([TRAINABLE_METHOD.format(x) for x in list_predefined_trainable_methods()])
     ts.extend([UNTRAINABLE_METHOD.format(x) for x in
                list_predefined_untrainable_methods()])
     return ''.join(ts)

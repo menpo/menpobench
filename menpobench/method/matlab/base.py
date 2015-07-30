@@ -7,7 +7,7 @@ from menpobench import configure_matlab_bin_path
 from menpobench.config import (is_linux, is_osx, is_windows,
                                resolve_config_path)
 from menpobench.exception import MissingConfigKeyError
-from menpobench.method.base import (predefined_method_dir, images_to_mat,
+from menpobench.method.base import (predefined_trainable_method_dir, images_to_mat,
                                     BenchResult)
 from menpobench.utils import invoke_process, TempDirectory
 from menpo.shape import PointCloud
@@ -127,7 +127,7 @@ def train_matlab_method(method_path, matlab_train_filename,
                         training_images_path):
     # Get absolute path to the train method and copy across to the method
     # folder
-    matlab_train_path = predefined_method_dir() / matlab_train_filename
+    matlab_train_path = predefined_trainable_method_dir() / matlab_train_filename
     shutil.copyfile(str(matlab_train_path),
                     str(method_path / 'menpobench_namespace.m'))
 

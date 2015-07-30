@@ -1,8 +1,4 @@
-import numpy as np
 from functools import partial
-from scipy.io import savemat
-import menpo.io as mio
-from menpo.visualize import print_progress
 from menpobench import predefined_dir
 from menpobench.imgprocess import menpo_img_process
 from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
@@ -61,6 +57,8 @@ class MenpoFitWrapper(object):
 
 
 def save_images_to_dir(images, out_path, output_ext='.jpg'):
+    from menpo.visualize import print_progress
+    import menpo.io as mio
     if not out_path.exists():
         out_path.mkdir()
     for k, im in enumerate(print_progress(images,
@@ -69,6 +67,8 @@ def save_images_to_dir(images, out_path, output_ext='.jpg'):
 
 
 def save_landmarks_to_dir(images, label, out_path, output_ext='.pts'):
+    from menpo.visualize import print_progress
+    import menpo.io as mio
     if not out_path.exists():
         out_path.mkdir()
     for k, im in enumerate(print_progress(images,
@@ -78,6 +78,8 @@ def save_landmarks_to_dir(images, label, out_path, output_ext='.pts'):
 
 
 def images_to_mat(images, out_path, attach_ground_truth=False):
+    import numpy as np
+    from scipy.io import savemat
     as_fortran = np.asfortranarray
 
     image_dicts = []
@@ -96,24 +98,25 @@ def images_to_mat(images, out_path, attach_ground_truth=False):
     savemat(str(mat_out_path), {'menpobench_images': image_dicts})
 
 
-def predefined_method_dir():
-    return predefined_dir() / 'method'
+def predefined_trainable_method_dir():
+    return predefined_dir() / 'trainable_method'
 
 
 def predefined_untrainable_method_dir():
     return predefined_dir() / 'untrainable_method'
 
 
-def predefined_method_path(name):
-    return predefined_method_dir() / '{}.py'.format(name)
+def predefined_trainable_method_path(name):
+    return predefined_trainable_method_dir() / '{}.py'.format(name)
 
 
 def predefined_untrainable_method_path(name):
     return predefined_untrainable_method_dir() / '{}.py'.format(name)
 
 
-def list_predefined_methods():
-    return sorted([p.stem for p in predefined_method_dir().glob('*.py')])
+def list_predefined_trainable_methods():
+    return sorted([p.stem for p in
+                   predefined_trainable_method_dir().glob('*.py')])
 
 
 def list_predefined_untrainable_methods():
@@ -126,9 +129,10 @@ def method_metadata_schema():
     return load_schema(predefined_dir() / 'method_metadata_schema.yaml')
 
 
-_load_trainable_method_module = partial(load_module_with_error_messages,
-                              'method', predefined_method_path,
-                              metadata_schema=method_metadata_schema())
+_load_trainable_method_module = partial(
+    load_module_with_error_messages, 'method',
+    predefined_trainable_method_path,
+    metadata_schema=method_metadata_schema())
 
 _load_untrainable_method_module = partial(
     load_module_with_error_messages, 'untrainable method',
@@ -229,7 +233,7 @@ class Test(Method):
         return results
 
 
-def retrieve_method(method_def):
+def retrieve_trainable_method(method_def):
     lm_pre_test, lm_post_test, lm_pre_train = None, None, None
     if isinstance(method_def, str):
         name = method_def

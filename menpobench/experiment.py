@@ -2,7 +2,7 @@ from menpobench import predefined_dir
 from menpobench.dataset import retrieve_datasets
 from menpobench.errormetric import retrieve_error_metrics
 from menpobench.exception import SchemaError
-from menpobench.method import retrieve_method
+from menpobench.method import retrieve_trainable_method
 from menpobench.schema import schema_error_report, schema_is_valid
 from menpobench.utils import load_yaml, load_schema, memoize
 
@@ -56,12 +56,12 @@ class Experiment(object):
             if 'training_data' not in c:
                 raise ValueError('Trying to test trainable methods but no '
                                  'training_data was provided')
-            self.trainable_methods = [retrieve_method(m) for m in c['methods']]
+            self.trainable_methods = [retrieve_trainable_method(m) for m in c['methods']]
         else:
             self.trainable_methods = []
 
         if 'untrainable_methods' in c:
-            self.untrainable_methods = [retrieve_method(m)
+            self.untrainable_methods = [retrieve_trainable_method(m)
                                         for m in c['untrainable_methods']]
         else:
             self.untrainable_methods = []
