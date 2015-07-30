@@ -25,14 +25,12 @@ def dataset_metadata_schema():
     return load_schema(predefined_dir() / 'dataset_metadata_schema.yaml')
 
 
-_load_dataset_module = partial(load_module_with_error_messages,
-                               'dataset', predefined_dataset_path,
-                               metadata_schema=dataset_metadata_schema())
-
-
 def load_and_validate_dataset_module(name):
     # loading a dataset validates the metadata
-    module, metadata = _load_dataset_module(name)
+    module, metadata = load_module_with_error_messages(
+        'dataset', predefined_dataset_path, name,
+        metadata_schema=dataset_metadata_schema())
+
     try:
         generate_dataset = getattr(module, 'generate_dataset')
     except AttributeError:

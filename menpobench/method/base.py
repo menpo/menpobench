@@ -1,4 +1,3 @@
-from functools import partial
 from menpobench import predefined_dir
 from menpobench.imgprocess import menpo_img_process
 from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
@@ -129,19 +128,10 @@ def method_metadata_schema():
     return load_schema(predefined_dir() / 'method_metadata_schema.yaml')
 
 
-_load_trainable_method_module = partial(
-    load_module_with_error_messages, 'method',
-    predefined_trainable_method_path,
-    metadata_schema=method_metadata_schema())
-
-_load_untrainable_method_module = partial(
-    load_module_with_error_messages, 'untrainable method',
-    predefined_untrainable_method_path,
-    metadata_schema=method_metadata_schema())
-
-
 def load_and_validate_untrainable_method_module(name):
-    module, metadata = _load_untrainable_method_module(name)
+    module, metadata = load_module_with_error_messages(
+        'untrainable method', predefined_untrainable_method_path, name,
+        metadata_schema=method_metadata_schema())
     try:
         test = getattr(module, 'test')
     except AttributeError:
@@ -155,7 +145,9 @@ def load_and_validate_untrainable_method_module(name):
 
 
 def load_and_validate_trainable_method_module(name):
-    module, metadata = _load_trainable_method_module(name)
+    module, metadata = load_module_with_error_messages(
+        'trainable method', predefined_trainable_method_path, name,
+        metadata_schema=method_metadata_schema())
     try:
         train = getattr(module, 'train')
     except AttributeError:

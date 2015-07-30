@@ -25,6 +25,9 @@ def configure_matlab_bin_path(matlab_bin_path):
     save_custom_config({'matlab_bin_path': matlab_bin_path})
 
 
+from menpobench.utils import memoize
+
+@memoize
 def menpobench_dir():
     r"""The path to the top of the menpobench Python package.
 
@@ -38,6 +41,9 @@ def menpobench_dir():
     from pathlib import Path  # to avoid cluttering the menpo.base namespace
     import os
     return Path(os.path.abspath(__file__)).parent
+
+
+del memoize  # clean up namespace
 
 
 def predefined_dir():
