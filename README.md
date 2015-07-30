@@ -140,15 +140,18 @@ Benchmark runs are described in a simple
 
 ```yaml
 training_data:
-    - lfpw_38_dlib_train
-    - ibug_38_dlib_train
+    - lfpw_train_face_ibug_68_dlib
+    - ibug_train_face_ibug_68_dlib
 testing_data:
-    - lfpw_38_dlib_test
-methods:
+    - lfpw_test_face_ibug_68_dlib
+    - ibug_test_face_ibug_68_dlib
+trainable_methods:
     - sdm
     - aam
 untrainable_methods:
     - intraface
+error_metric:
+    - face_size
 ```
 
 You would save a text file like this with the name of your experiment, e.g.
@@ -156,7 +159,7 @@ You would save a text file like this with the name of your experiment, e.g.
 the `menpobench` command:
 
 ```sh
-> menpobench ./path/to/sdm_vs_aam.yaml
+> menpobench run ./path/to/sdm_vs_aam.yaml -o ./results
 ```
 
 In this instance, our YAML describes an experiment where we want to compare the
@@ -166,11 +169,11 @@ Appearance Model (AAM) and the popular closed-source
 The test set is chosen from a standard list of test-sets that menpobench
 provides. menpobench will:
 
-1. Train an AAM and SDM on LFPW and iBUG using the 38 point markup and
+1. Train an AAM and SDM on LFPW and iBUG using the 68 point iBUG face markup and
 [dlib](http://dlib.net) object detector bounding boxes for initialization.
 
 2. Evaluate both the AAM and SDM trained by testing on the LFPW test set, also
-using 38 points and dlib object detection bounding boxes.
+using 68 points and dlib object detection bounding boxes.
 
 3. Additionally evaluate against intraface.
 
@@ -204,8 +207,24 @@ the results on your own machine.
 
 ## How do I know what keys are available?
 
-You can run `menpobench --list` to output an exhaustive list of what predefined
-datasets, methods, and untrainable methods are provided in menpobench.
+You can run `menpobench list` to output an exhaustive list of what predefined
+datasets, methods, and landmark processes are provided in menpobench.
+
+## Wait, what are landmark processes?
+
+Different methods tend to require different configurations of landmarks. That
+means for each dataset we generally need to have access to many different types
+of landmarks. We could remake lots of database modules, so we might have:
+
+- `lfpw_train_face_ibug_68_dlib`
+- `lfpw_train_face_ibug_66_dlib`
+- `lfpw_train_face_ibug_49_dlib`
+- `lfpw_train_face_ibug_48_dlib`
+
+Clearly there is a lot of repetition here, and actually the bottom 3
+datasets are just subsets of the top dataset. We add the concept of
+**landmark processes** to address this. A landmark process is run on each image
+passed through the benchmark, and can return a modified version of the landmarks.
 
 ## How do I know what a key actually does?
 
@@ -252,7 +271,7 @@ def generate_dataset():
         im = mio.import_image(path)
         im.landmarks['gt'] = mio.import_landmark_file(DB_PATH / 'gt' / (path.stem + '.ljson'))
         im.landmarks['bbox'] = mio.import_landmark_file(DB_PATH / 'bbox' / (path.stem + '.ljson'))
-        yield im
+        yield path.stem, im
 ```
 
 If you saved this file as `./path/to/my_dataset.py`, you could use it for
