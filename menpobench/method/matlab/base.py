@@ -104,7 +104,7 @@ def load_matlab_results(results_path):
     from menpo.shape import PointCloud
     from scipy.io import loadmat
     results = loadmat(str(results_path / 'menpobench_test_results.mat'))
-    return [BenchResult(PointCloud(r)) for r in results['results']]
+    return [BenchResult(PointCloud(r[0])) for r in results['results']]
 
 
 class MatlabWrapper(object):

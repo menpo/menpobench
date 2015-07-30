@@ -1,6 +1,6 @@
 ---
 type: //rec
 required:
-  cache_dir: //str
+  cache_dir: //any
 optional:
-  matlab_bin_path: //str
+  matlab_bin_path: //any
