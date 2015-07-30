@@ -15,7 +15,6 @@ import yaml
 import json
 import pyrx
 from math import ceil, floor
-from menpo.visualize.textutils import print_progress, bytes_str
 from menpobench.schema import schema_error_report, schema_is_valid
 from menpobench.exception import (ModuleNotFoundError, SchemaError,
                                   MissingMetadataError)
@@ -48,6 +47,7 @@ def download_file(url, dest_path):
     r"""
     Download a file to a path, reporting the progress with a progress bar
     """
+    from menpo.visualize.textutils import print_progress, bytes_str
     req = urlopen(url)
     n_bytes = int(req.headers['content-length'])
     chunk_size_bytes = 512 * 1024

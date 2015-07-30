@@ -21,8 +21,8 @@ Options:
   -h --help          Show this screen.
   --version          Show version.
 """
-import menpobench
 import traceback
+import menpobench
 from menpobench import (invoke_benchmark, configure_cache_dir,
                         configure_matlab_bin_path)
 from docopt import docopt

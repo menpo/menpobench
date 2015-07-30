@@ -6,8 +6,8 @@ try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
-from menpobench.utils import extract_archive, checksum, download_file, \
-    TempDirectory
+from menpobench.utils import (extract_archive, checksum, download_file,
+                              TempDirectory)
 
 
 # Global url for the current Menpo CDN for storing assets - datasets and

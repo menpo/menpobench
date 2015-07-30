@@ -1,8 +1,6 @@
-import numpy as np
-from menpo.shape import PointCloud
-
-
 def union_bounding_box(landmarks):
+    import numpy as np
+    from menpo.shape import PointCloud
     return PointCloud(np.concatenate([landmarks[l].lms.points
                                       for l in landmarks]), copy=False)
 
@@ -17,6 +15,7 @@ def basic_img_process(img):
 
 
 def menpo_img_process(img, crop=True):
+    import numpy as np
     # for menpo methods we always want greyscale. we also don't want images
     # that are too large, and we want floating point images.
     if crop:

@@ -2,7 +2,6 @@ import os
 from subprocess import CalledProcessError
 from pathlib import Path
 import shutil
-from scipy.io import loadmat
 from menpobench import configure_matlab_bin_path
 from menpobench.config import (is_linux, is_osx, is_windows,
                                resolve_config_path)
@@ -10,7 +9,6 @@ from menpobench.exception import MissingConfigKeyError
 from menpobench.method.base import (predefined_trainable_method_dir, images_to_mat,
                                     BenchResult)
 from menpobench.utils import invoke_process, TempDirectory
-from menpo.shape import PointCloud
 
 _POTENTIAL_RELEASES = ['2015a', '2014b', '2014a', '2013b', '2013a', '2012b',
                        '2012a']
@@ -102,6 +100,8 @@ def invoke_matlab(command):
 
 
 def load_matlab_results(results_path):
+    from menpo.shape import PointCloud
+    from scipy.io import loadmat
     results = loadmat(str(results_path / 'menpobench_test_results.mat'))
     return [BenchResult(PointCloud(r)) for r in results['results']]
 

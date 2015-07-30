@@ -1,5 +1,4 @@
 from functools import partial
-import numpy as np
 from menpobench import predefined_dir
 from menpobench.utils import load_module_with_error_messages
 
@@ -33,10 +32,12 @@ def retrieve_error_metrics(error_metrics_def):
 
 
 def mean_error(gt, final):
+    import numpy as np
     return np.mean(np.sqrt(np.sum((gt.points - final.points) ** 2,
                                   axis=-1)))
 
 
 def root_mean_squared_error(target, gt_shape):
+    import numpy as np
     return np.sqrt(np.mean((target.points.flatten() -
                             gt_shape.points.flatten()) ** 2))

@@ -1,13 +1,11 @@
 from inspect import isgeneratorfunction
 from itertools import chain
 from functools import partial
-
 from menpobench import predefined_dir
 from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
 from menpobench.imgprocess import basic_img_process
 from menpobench.utils import (load_module_with_error_messages, load_schema,
                               memoize)
-from menpo.visualize.textutils import print_dynamic
 
 
 def predefined_dataset_dir():
@@ -54,6 +52,7 @@ def wrap_dataset_with_processing(id_img_gen, process):
 
 
 def print_processing_status(id_img_gen):
+    from menpo.visualize.textutils import print_dynamic
     i = 0
     for i, (id_, image) in enumerate(id_img_gen, 1):
         print_dynamic('Processing image {} ({})'.format(i, id_))
