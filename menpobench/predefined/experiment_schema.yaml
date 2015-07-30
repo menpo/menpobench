@@ -25,7 +25,7 @@ optional:
           required: { name: //str }
           optional:
             lm_processing: { type: //arr, length: { min: 1 }, contents: //str }
-  methods:
+  trainable_methods:
     type: //arr
     length: { min: 1 }
     contents:

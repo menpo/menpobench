@@ -52,11 +52,12 @@ class Experiment(object):
             self.training = retrieve_datasets(c['training_data'])
         self.testing = retrieve_datasets(c['testing_data'], test=True)
 
-        if 'methods' in c:
+        if 'trainable_methods' in c:
             if 'training_data' not in c:
                 raise ValueError('Trying to test trainable methods but no '
                                  'training_data was provided')
-            self.trainable_methods = [retrieve_trainable_method(m) for m in c['methods']]
+            self.trainable_methods = [retrieve_trainable_method(m)
+                                      for m in c['trainable_methods']]
         else:
             self.trainable_methods = []
 
