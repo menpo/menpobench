@@ -20,22 +20,21 @@ def list_predefined_experiments():
     return sorted([p.stem for p in predefined_experiment_dir().glob('*.yaml')])
 
 
-def retrieve_experiment(experiment_name):
-    if experiment_name.endswith('.yml') or experiment_name.endswith('.yaml'):
-        # user is giving a path to an experiment file
-        try:
-            config = load_yaml(experiment_name)
-        except IOError:
-            raise ValueError("Requested experiment configuration at path '{}' "
-                             "does not exist".format(experiment_name))
-    else:
-        # predefined experiment
-        try:
-            config = load_yaml(predefined_experiment_path(experiment_name))
-        except IOError:
-            raise ValueError("Requested predefined experiment configuration "
-                             "'{}' does not exist".format(experiment_name))
-    return Experiment(config)
+@memoize
+def experiment_schema():
+    return load_schema(predefined_dir() / 'experiment_schema.yaml')
+
+
+def validate_experiment_def(config):
+    s = experiment_schema()
+    if not schema_is_valid(s, config):
+        report = schema_error_report(s, config)
+        raise SchemaError(config, "experiment", report)
+
+
+def validate_predefined_experiment(name):
+    config = load_yaml(predefined_experiment_path(name))
+    validate_experiment_def(config)
 
 
 class Experiment(object):
@@ -88,18 +87,19 @@ class Experiment(object):
         return False
 
 
-@memoize
-def experiment_schema():
-    return load_schema(predefined_dir() / 'experiment_schema.yaml')
-
-
-def validate_experiment_def(config):
-    s = experiment_schema()
-    if not schema_is_valid(s, config):
-        report = schema_error_report(s, config)
-        raise SchemaError(config, "experiment", report)
-
-
-def validate_predefined_experiment(name):
-    config = load_yaml(predefined_experiment_path(name))
-    validate_experiment_def(config)
+def retrieve_experiment(experiment_name):
+    if experiment_name.endswith('.yml') or experiment_name.endswith('.yaml'):
+        # user is giving a path to an experiment file
+        try:
+            config = load_yaml(experiment_name)
+        except IOError:
+            raise ValueError("Requested experiment configuration at path '{}' "
+                             "does not exist".format(experiment_name))
+    else:
+        # predefined experiment
+        try:
+            config = load_yaml(predefined_experiment_path(experiment_name))
+        except IOError:
+            raise ValueError("Requested predefined experiment configuration "
+                             "'{}' does not exist".format(experiment_name))
+    return Experiment(config)
