@@ -247,7 +247,8 @@ class TempDirectory(Singleton):
             shutil.rmtree(str(d), ignore_errors=True)
 
 
-# wrap a generator with a function that is invoked per-item
 def wrap_generator(generator, f):
+    r"""Wrap a generator with a function that is invoked per-item
+    """
     for x in generator:
         yield f(x)

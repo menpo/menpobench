@@ -22,15 +22,14 @@ Options:
   --version          Show version.
 """
 import traceback
+from docopt import docopt
 import menpobench
 from menpobench import (invoke_benchmark, configure_cache_dir,
                         configure_matlab_bin_path)
-from docopt import docopt
 from menpobench.config import save_custom_config
 from menpobench.utils import centre_str
 from menpobench.exception import (ModuleNotFoundError, SchemaError,
                                   MissingMetadataError, MissingConfigKeyError)
-from menpobench.test import run_test_suite
 
 
 def invoke_benchmark_with_config_prompts(*args, **kwargs):
@@ -128,6 +127,7 @@ if __name__ == '__main__':
                                              overwrite=a['--overwrite'],
                                              matlab=a['--mat'])
     elif a['test']:
+        from menpobench.test import run_test_suite
         print(run_test_suite(verbose=a['-v']))
     elif a['config']:
         update_config(a['<config_key>'], a['<config_value>'])

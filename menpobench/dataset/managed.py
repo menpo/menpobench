@@ -90,4 +90,3 @@ for dataset in _MANAGED_DATASET_LIST:
 # ----------- Magic dataset contextmanager ---------- #
 
 managed_dataset = partial(managed_asset, MANAGED_DATASETS, cleanup=True)
-
