@@ -2,7 +2,8 @@ from menpobench import predefined_dir
 from menpobench.dataset import retrieve_datasets
 from menpobench.errormetric import retrieve_error_metrics
 from menpobench.exception import SchemaError
-from menpobench.method import retrieve_trainable_method
+from menpobench.method import (retrieve_trainable_method,
+                               retrieve_untrainable_method)
 from menpobench.schema import schema_error_report, schema_is_valid
 from menpobench.utils import load_yaml, load_schema, memoize
 
@@ -62,7 +63,7 @@ class Experiment(object):
             self.trainable_methods = []
 
         if 'untrainable_methods' in c:
-            self.untrainable_methods = [retrieve_trainable_method(m)
+            self.untrainable_methods = [retrieve_untrainable_method(m)
                                         for m in c['untrainable_methods']]
         else:
             self.untrainable_methods = []

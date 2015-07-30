@@ -84,7 +84,7 @@ def trainset_wrapper(id_img_gen):
 
 
 # a single dataset. Call provides a generator of (id, image) pairs.
-class DatasetLoader(object):
+class Dataset(object):
 
     def __init__(self, dataset_gen_f, name, metadata, lm_process=None):
         self.name = name
@@ -141,7 +141,7 @@ def retrieve_dataset(dataset_def):
             lm_process = retrieve_lm_processes(lm_process_def)
 
     dataset_gen_f, metadata = load_and_validate_dataset_module(name)
-    return DatasetLoader(dataset_gen_f, name, metadata, lm_process=lm_process)
+    return Dataset(dataset_gen_f, name, metadata, lm_process=lm_process)
 
 
 def retrieve_datasets(dataset_defs, test=False):

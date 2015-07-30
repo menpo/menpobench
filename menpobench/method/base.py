@@ -1,100 +1,7 @@
 from menpobench import predefined_dir
-from menpobench.imgprocess import menpo_img_process
 from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
 from menpobench.utils import (load_module_with_error_messages, load_schema,
                               memoize)
-
-
-class BenchResult(object):
-
-    def __init__(self, final_shape, inital_shape=None):
-        self.final_shape = final_shape
-        self.initial_shape = inital_shape
-
-    @property
-    def has_initial_shape(self):
-        return self.initial_shape is not None
-
-    def tojson(self):
-        d = {'final': self.final_shape.points.tolist()}
-        if self.has_initial_shape:
-            d['initial'] = self.initial_shape.points.tolist()
-        return d
-
-    def apply_lm_process(self, lm_process):
-        final_shape = lm_process(self.final_shape)
-        initial_shape = (lm_process(self.initial_shape) if
-                         self.has_initial_shape else None)
-        return BenchResult(final_shape, inital_shape=initial_shape)
-
-
-def menpofit_to_result(fr):
-    return BenchResult(fr.final_shape, inital_shape=fr.initial_shape)
-
-
-class MenpoFitWrapper(object):
-
-    def __init__(self, fitter):
-        self.fitter = fitter
-
-    def __call__(self, img_generator):
-        from menpo.transform import AlignmentSimilarity
-        results = []
-        ref_shape = self.fitter.reference_shape
-        for img in img_generator:
-            # note that we don't want to crop the image in our preprocessing
-            # that's because the gt on the image we are passed is what will
-            # be used for assessment - we will introduce large errors if this
-            # is modified in size.
-            img = menpo_img_process(img, crop=False)
-            bbox = img.landmarks['bbox'].lms
-            shape_bb = ref_shape.bounding_box()
-            init_shape = AlignmentSimilarity(shape_bb, bbox).apply(ref_shape)
-            menpofit_fr = self.fitter.fit(img, init_shape)
-            results.append(menpofit_to_result(menpofit_fr))
-        return results
-
-
-def save_images_to_dir(images, out_path, output_ext='.jpg'):
-    from menpo.visualize import print_progress
-    import menpo.io as mio
-    if not out_path.exists():
-        out_path.mkdir()
-    for k, im in enumerate(print_progress(images,
-                                          prefix='Saving images to disk')):
-        mio.export_image(im, out_path / '{}{}'.format(k, output_ext))
-
-
-def save_landmarks_to_dir(images, label, out_path, output_ext='.pts'):
-    from menpo.visualize import print_progress
-    import menpo.io as mio
-    if not out_path.exists():
-        out_path.mkdir()
-    for k, im in enumerate(print_progress(images,
-                                          prefix='Saving landmarks to disk')):
-        mio.export_landmark_file(im.landmarks[label],
-                                 out_path / '{}{}'.format(k, output_ext))
-
-
-def images_to_mat(images, out_path, attach_ground_truth=False):
-    import numpy as np
-    from scipy.io import savemat
-    as_fortran = np.asfortranarray
-
-    image_dicts = []
-    for im in images:
-        bbox = im.landmarks['bbox'].lms.bounds()
-        i_dict = {'pixels': as_fortran(im.rolled_channels()),
-                  'bbox': as_fortran(np.array(bbox).ravel())}
-        if attach_ground_truth:
-            i_dict['gt'] = as_fortran(im.landmarks['gt'].lms.points)
-        image_dicts.append(i_dict)
-
-    if not out_path.exists():
-        out_path.mkdir(parents=True)
-    mat_out_path = out_path / 'menpobench_images.mat'
-    print('Serializing image data to Matlab file: {}'.format(mat_out_path))
-    savemat(str(mat_out_path), {'menpobench_images': image_dicts})
 
 
 def predefined_trainable_method_dir():
@@ -160,11 +67,6 @@ def load_and_validate_trainable_method_module(name):
     return train, metadata
 
 
-def wrap_img_gen_with_lm_process(img_gen, lm_process):
-    for img in img_gen:
-        yield apply_lm_process_to_img(lm_process, img)
-
-
 class Method(object):
 
     def __init__(self, name, metadata):
@@ -181,6 +83,11 @@ class Method(object):
 
     def __str__(self):
         return self.name
+
+
+def wrap_img_gen_with_lm_process(img_gen, lm_process):
+    for img in img_gen:
+        yield apply_lm_process_to_img(lm_process, img)
 
 
 class Train(Method):
@@ -262,3 +169,26 @@ def retrieve_untrainable_method(method_def):
 
     test, metadata = load_and_validate_untrainable_method_module(name)
     return Test(test, name, metadata, lm_pre_test, lm_post_test)
+
+
+class BenchResult(object):
+
+    def __init__(self, final_shape, inital_shape=None):
+        self.final_shape = final_shape
+        self.initial_shape = inital_shape
+
+    @property
+    def has_initial_shape(self):
+        return self.initial_shape is not None
+
+    def tojson(self):
+        d = {'final': self.final_shape.points.tolist()}
+        if self.has_initial_shape:
+            d['initial'] = self.initial_shape.points.tolist()
+        return d
+
+    def apply_lm_process(self, lm_process):
+        final_shape = lm_process(self.final_shape)
+        initial_shape = (lm_process(self.initial_shape) if
+                         self.has_initial_shape else None)
+        return BenchResult(final_shape, inital_shape=initial_shape)

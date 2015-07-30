@@ -6,8 +6,9 @@ from menpobench import configure_matlab_bin_path
 from menpobench.config import (is_linux, is_osx, is_windows,
                                resolve_config_path)
 from menpobench.exception import MissingConfigKeyError
-from menpobench.method.base import (predefined_trainable_method_dir, images_to_mat,
+from menpobench.method.base import (predefined_trainable_method_dir,
                                     BenchResult)
+from menpobench.method.io import images_to_mat
 from menpobench.utils import invoke_process, TempDirectory
 
 _POTENTIAL_RELEASES = ['2015a', '2014b', '2014a', '2013b', '2013a', '2012b',

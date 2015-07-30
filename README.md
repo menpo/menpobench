@@ -222,8 +222,12 @@ of landmarks. We could remake lots of database modules, so we might have:
 - `lfpw_train_face_ibug_48_dlib`
 
 Clearly there is a lot of repetition here, and actually the bottom 3
-datasets are just subsets of the top dataset. We add the concept of
+d
+
+
+sdfdatasets are just subsets of the top dataset. We add the concept of
 **landmark processes** to address this. A landmark process is run on each image
+
 passed through the benchmark, and can return a modified version of the landmarks.
 
 ## How do I know what a key actually does?
