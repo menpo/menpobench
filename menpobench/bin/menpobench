@@ -139,7 +139,6 @@ if __name__ == '__main__':
                                              matlab=a['--mat'],
                                              force=a['--force'])
     elif a['upload']:
-        print('test')
         invoke_benchmark_with_config_prompts(a['<experiment_config>'],
                                              upload=True,
                                              force_upload=a['--force'])
