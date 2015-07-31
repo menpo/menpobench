@@ -1,5 +1,8 @@
 sudo: false
 
+git:
+  depth: 500
+
 env:
   global:
     - BINSTAR_USER: menpo
