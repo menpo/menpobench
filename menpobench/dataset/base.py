@@ -1,10 +1,10 @@
-from inspect import isgeneratorfunction
 from itertools import chain
 from functools import partial
 from menpobench import predefined_dir
 from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
 from menpobench.imgprocess import basic_img_process
-from menpobench.utils import (load_module_with_error_messages, load_schema,
+from menpobench.utils import (load_module_with_error_messages,
+                              load_callable_with_error_messages, load_schema,
                               memoize)
 
 
@@ -30,17 +30,9 @@ def load_and_validate_dataset_module(name):
     module, metadata = load_module_with_error_messages(
         'dataset', predefined_dataset_path, name,
         metadata_schema=dataset_metadata_schema())
-
-    try:
-        generate_dataset = getattr(module, 'generate_dataset')
-    except AttributeError:
-        raise AttributeError("dataset module '{}' doesn't "
-                             "include a 'generate_dataset' generator "
-                             "function".format(name))
-    if not isgeneratorfunction(generate_dataset):
-        raise AttributeError("dataset module '{} includes a "
-                             "'generate_dataset' attribute, but it isn't a "
-                             "generator function".format(name))
+    generate_dataset = load_callable_with_error_messages(
+        module, 'generate_dataset', name,
+        module_type='dataset', generatorfunc=True)
     return generate_dataset, metadata
 
 

@@ -1,6 +1,7 @@
 from functools import partial
 from menpobench import predefined_dir
-from menpobench.utils import load_module_with_error_messages
+from menpobench.utils import (load_module_with_error_messages,
+                              load_callable_with_error_messages)
 
 
 def predefined_lm_process_dir():
@@ -20,9 +21,10 @@ load_module_for_process = partial(load_module_with_error_messages,
                                   predefined_lmprocess_path)
 
 
-def retrieve_lm_process(lm_process_name):
-    module = load_module_for_process(lm_process_name)
-    return getattr(module, 'process')
+def retrieve_lm_process(name):
+    module = load_module_for_process(name)
+    return load_callable_with_error_messages(module, 'process', name,
+                                             module_type='landmark process')
 
 
 class CallableChain(object):

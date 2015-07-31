@@ -1,7 +1,7 @@
 from menpobench import predefined_dir
 from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
 from menpobench.utils import (load_module_with_error_messages, load_schema,
-                              memoize)
+                              memoize, load_callable_with_error_messages)
 
 
 def predefined_trainable_method_dir():
@@ -39,15 +39,8 @@ def load_and_validate_untrainable_method_module(name):
     module, metadata = load_module_with_error_messages(
         'untrainable method', predefined_untrainable_method_path, name,
         metadata_schema=method_metadata_schema())
-    try:
-        test = getattr(module, 'test')
-    except AttributeError:
-        raise AttributeError("untrainable method module '{}' doesn't "
-                             "include a 'test' callable".format(name))
-    if not callable(test):
-        raise AttributeError("untrainable method module '{} includes a "
-                             "'test' attribute, but it isn't a "
-                             "callable".format(name))
+    test = load_callable_with_error_messages(module, 'test', name,
+                                             module_type='untrainable method')
     return test, metadata
 
 
@@ -55,15 +48,8 @@ def load_and_validate_trainable_method_module(name):
     module, metadata = load_module_with_error_messages(
         'trainable method', predefined_trainable_method_path, name,
         metadata_schema=method_metadata_schema())
-    try:
-        train = getattr(module, 'train')
-    except AttributeError:
-        raise AttributeError("trainable method module '{}' doesn't "
-                             "include a 'train' callable".format(name))
-    if not callable(train):
-        raise AttributeError("trainable method module '{} includes a "
-                             "'train' attribute, but it isn't a "
-                             "callable".format(name))
+    train = load_callable_with_error_messages(module, 'train', name,
+                                              module_type='trainable method')
     return train, metadata
 
 

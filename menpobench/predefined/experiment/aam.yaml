@@ -1,0 +1,8 @@
+training_data:
+    - lfpw_train_face_ibug_68_dlib
+testing_data:
+    - lfpw_test_face_ibug_68_dlib
+trainable_methods:
+    - aam
+error_metric:
+  - face_size

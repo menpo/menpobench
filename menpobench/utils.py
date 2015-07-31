@@ -3,6 +3,7 @@ import subprocess
 import tarfile
 import tempfile
 import shutil
+from inspect import isgeneratorfunction
 try:
     from urllib2 import urlopen  # Py2
 except ImportError:
@@ -131,6 +132,21 @@ def load_module_with_error_messages(module_type, predefined_f, name,
     else:
         return module
 
+def load_callable_with_error_messages(module, func_name, module_name,
+                                      module_type=None, generatorfunc=False):
+    prefix = module_type + ' ' if module_type is not None else ''
+    type_test = isgeneratorfunction if generatorfunc else callable
+    type_str = 'generator function' if generatorfunc else 'callable'
+    try:
+        f = getattr(module, func_name)
+    except AttributeError:
+        raise AttributeError("{}module '{}' doesn't include a '{}' {}".format(
+            prefix, module_name, func_name, type_str))
+    if not type_test(f):
+        raise AttributeError("{}module '{}' includes a '{}' attribute, but it "
+                             "isn't a {}".format(prefix, module_name,
+                                                 func_name, type_str))
+    return f
 
 def norm_path(filepath):
     r"""
