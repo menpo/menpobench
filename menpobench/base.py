@@ -105,15 +105,16 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                             ex.testing.predefined and
                             train.predefined)
                 if cachable:
+                    id_ = ex.trainable_id(train)
                     try:
-                        results = retrieve_cached_run(ex.trainable_id(train))
+                        results = retrieve_cached_run(id_)
                     except CachedExperimentNotAvailable:
                         print('no cached version available. Training anyway')
                         results = invoke_train_and_test(train, ex.training,
                                                         ex.testing)
                         if upload:
                             print('attempting to upload new results')
-                            upload_results(results)
+                            upload_results(results, id_)
                 else:
                     results = invoke_train_and_test(train, ex.training,
                                                     ex.testing)

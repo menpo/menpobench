@@ -1,5 +1,7 @@
 import hashlib
 import json
+import gzip
+from io import BytesIO
 import menpobench
 from menpobench.config import resolve_cache_dir, load_config
 from menpobench.managed import (WebSource, MENPO_CDN_URL,
@@ -28,7 +30,7 @@ def experiment_dir_for_version(version):
 class CDNExperimentSource(WebSource):
 
     def __init__(self, name, version):
-        url = MENPO_CDN_EXPERIMENT_URL + 'v{}/{}.json.gz'.format(version, name)
+        url = MENPO_CDN_EXPERIMENT_URL + '{}/{}.json.gz'.format(version, name)
         self.version = version
         super(CDNExperimentSource, self).__init__(name, url, None)
 
@@ -45,11 +47,7 @@ class CDNExperimentSource(WebSource):
 
 
 def retrieve_cached_run(id_):
-    hash = hashlib.sha1(json.dumps(id_, sort_keys=True)).hexdigest()
-    v = menpobench.__version__
-    # if '+' in v:
-    #     print('warning - skipping hash retrieval as on a development release')
-    potential_asset = CDNExperimentSource(hash, v)
+    potential_asset = CDNExperimentSource(hash_of_id(id_), cache_version())
     try:
         download_asset_if_needed(potential_asset, verbose=True, )
     except HTTPError:
@@ -61,10 +59,7 @@ def retrieve_cached_run(id_):
 def retrieve_upload_credentials():
     c = load_config()
     if 'MENPO_CDN_S3_ACCESS_KEY' in c and 'MENPO_CDN_S3_SECRET_KEY' in c:
-        return {
-            'S3_ACCESS_KEY': c['MENPO_CDN_S3_ACCESS_KEY'],
-            'S3_SECRET_KEY': c['MENPO_CDN_S3_SECRET_KEY']
-        }
+        return c['MENPO_CDN_S3_ACCESS_KEY'], c['MENPO_CDN_S3_SECRET_KEY']
     else:
         raise MissingConfigKeyError('MENPO_CDN_S3_ACCESS_KEY and '
                                     'MENPO_CDN_S3_SECRECT_KEY both are '
@@ -80,6 +75,26 @@ def can_upload():
         return True
 
 
-def upload_results(results):
-    cred = retrieve_upload_credentials()
-    print('uploading')
+def upload_results(results, id_):
+    import tinys3
+    conn = tinys3.Connection(*retrieve_upload_credentials(), tls=True,
+                             default_bucket='cdn.menpo.org',
+                             endpoint='s3-eu-west-1.amazonaws.com')
+    out = BytesIO()
+    with gzip.GzipFile(fileobj=out, mode="wt") as f:
+        json.dump(results, f)
+    conn.upload('experiments/{}/{}.json.gz'.format(cache_version(),
+                                                   hash_of_id(id_)), out)
+    print('Successfully cached result')
+
+
+def hash_of_id(id_):
+    return hashlib.sha1(json.dumps(id_, sort_keys=True)).hexdigest()
+
+
+def cache_version():
+    v = menpobench.__version__
+    if '+' in v:
+        return 'd' + v.split('+')[0]
+    else:
+        return 'v' + v
