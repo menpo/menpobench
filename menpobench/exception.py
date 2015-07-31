@@ -36,5 +36,11 @@ class MissingMetadataError(Exception):
 class MissingConfigKeyError(KeyError):
     pass
 
+# Attempting to upload without the permission
 class MenpoCDNCredentialsMissingError(Exception):
+    pass
+
+
+# The output dir exists and overwrite is not set
+class OutputDirExistsError(Exception):
     pass

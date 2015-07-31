@@ -6,7 +6,8 @@ from menpobench.cache import (retrieve_results, upload_results, can_upload,
                               hash_of_id)
 from menpobench.config import resolve_cache_dir
 from menpobench.exception import (CachedExperimentNotAvailable,
-                                  MenpoCDNCredentialsMissingError)
+                                  MenpoCDNCredentialsMissingError,
+                                  OutputDirExistsError)
 from menpobench.experiment import retrieve_experiment
 from menpobench.method.matlab.base import resolve_matlab_bin_path
 from menpobench.output import (save_test_results, compute_and_save_errors,
@@ -72,10 +73,10 @@ def invoke_benchmark(experiment_name, output_dir=None, overwrite=False,
         output_dir = Path(norm_path(output_dir))
         if output_dir.is_dir():
             if not overwrite:
-                raise ValueError("Output directory {} already exists.\n"
-                                 "Pass '--overwrite' if you want menpobench to"
-                                 " delete this directory "
-                                 "automatically.".format(output_dir))
+                raise OutputDirExistsError(
+                    "Output directory {} already exists.\n"
+                    "Pass '--overwrite' if you want menpobench to delete this "
+                    "directory automatically.".format(output_dir))
             else:
                 print('--overwrite passed and output directory {} exists - '
                       'deleting\n'.format(output_dir))
@@ -151,7 +152,7 @@ def run_method(ex, method, trainable=True, upload=False, force=False,
         if cachable:
             id_ = id_f(method)
             id_hash = hash_of_id(id_)[:5]
-            print(centre_str('[ cachable: {} ]'.format(id_hash)))
+            print(centre_str('[ cache id: {} ]'.format(id_hash)))
             if force_upload and upload:
                 results = run(method, ex.testing)
                 print('Uploading results for {} (forced)'.format(id_hash))
@@ -169,10 +170,9 @@ def run_method(ex, method, trainable=True, upload=False, force=False,
                     if upload:
                         print('Skipping upload of {} - already '
                               'saved'.format(id_hash))
-        elif output_dir is not None:
-            raise ValueError('Running upload but encountered an '
-                             'non-predefined (uncachable) '
-                             'experiment component')
+        elif not output:
+            print('Warning: cannot upload {} as it is'
+                  'uncachable'.format(method))
         else:
             results = run(method, ex.testing)
     else:

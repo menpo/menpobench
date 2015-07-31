@@ -32,7 +32,8 @@ from menpobench.config import save_custom_config
 from menpobench.utils import centre_str
 from menpobench.exception import (ModuleNotFoundError, SchemaError,
                                   MissingMetadataError, MissingConfigKeyError,
-                                  MenpoCDNCredentialsMissingError)
+                                  MenpoCDNCredentialsMissingError,
+                                  OutputDirExistsError)
 
 
 def invoke_benchmark_with_config_prompts(*args, **kwargs):
@@ -68,36 +69,36 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
         print(centre_str('-- SCHEMA ERROR --'))
         print('')
         print(e)
-        print('\nCorrect this issue and try running menpobench again.')
-        exit(1)
     except MissingMetadataError as e:
         print('')
         print(centre_str('-- MISSING METADATA --'))
         print('')
         print(e)
-        print('\nCorrect this issue and try running menpobench again.')
-        exit(1)
     except ModuleNotFoundError as e:
         print('')
         print(centre_str('-- MODULE NOT FOUND --'))
         print('')
         print(e)
-        print('Correct this issue and try running menpobench again.')
-        exit(1)
     except MenpoCDNCredentialsMissingError as e:
         print('')
         print(centre_str('-- MENPO CDN CREDENTIALS MISSING --'))
         print('')
         print(e)
-        print('Correct this issue and try running menpobench again.')
-        exit(1)
+    except OutputDirExistsError as e:
+        print('')
+        print(centre_str('-- OUTPUT DIR EXISTS --'))
+        print('')
+        print(e)
     except Exception:
         print('\n')
         print(centre_str('ERROR', c='!'))
         print(centre_str('-- menpobench has encountered an unrecoverable error --'))
         print(' ')
         print(traceback.format_exc())
-        exit(1)
+    else:
+        exit(0)
+    print('\nCorrect this issue and try running menpobench again.')
+    exit(1)
 
 
 def list_all_predefined():
