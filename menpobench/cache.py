@@ -46,7 +46,7 @@ class CDNExperimentSource(WebSource):
 # ----------- Magic dataset contextmanager ---------- #
 
 
-def retrieve_cached_run(id_):
+def retrieve_results(id_):
     potential_asset = CDNExperimentSource(hash_of_id(id_), cache_version())
     try:
         download_asset_if_needed(potential_asset, verbose=True, )

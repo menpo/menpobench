@@ -1,15 +1,17 @@
+from functools import partial
 from pathlib import Path
-import menpobench
 import shutil
-from menpobench.config import resolve_cache_dir
-from menpobench.experiment import retrieve_experiment
-from menpobench.output import save_test_results, compute_and_save_errors, plot_ceds
-from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
-from menpobench.method.matlab.base import resolve_matlab_bin_path
-from menpobench.cache import (retrieve_cached_run, can_upload, upload_results,
+import menpobench
+from menpobench.cache import (retrieve_results, upload_results, can_upload,
                               hash_of_id)
+from menpobench.config import resolve_cache_dir
 from menpobench.exception import (CachedExperimentNotAvailable,
                                   MenpoCDNCredentialsMissingError)
+from menpobench.experiment import retrieve_experiment
+from menpobench.method.matlab.base import resolve_matlab_bin_path
+from menpobench.output import (save_test_results, compute_and_save_errors,
+                               plot_ceds)
+from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 
 
 def invoke_train(train, training_f):
@@ -30,19 +32,10 @@ def invoke_test(test, testing_f):
                   'result': r.tojson()}
             for (id_, r, gt) in zip(test_set.ids, results, test_set.gt_shapes)}
 
-def invoke_train_and_test(train, training_f, testing_f):
+
+def invoke_train_and_test(training_f, train, testing_f):
     test = invoke_train(train, training_f)
     return invoke_test(test, testing_f)
-
-
-def save_results(results, test_set, method, error_metrics):
-    # C. Save results
-    results_dict = {i: r for i, r in zip(test_set.ids, results)}
-    save_test_results(results_dict, method.name,
-                      results_methods_dir, matlab=matlab)
-    compute_and_save_errors(test_set.gt_shapes, results, error_metrics,
-                method.name, errors_methods_dir)
-    print("Results saved for '{}'.\n".format(method))
 
 
 def invoke_benchmark(experiment_name, output_dir=None, overwrite=False,
@@ -52,9 +45,9 @@ def invoke_benchmark(experiment_name, output_dir=None, overwrite=False,
     print(centre_str('- - - -  M E N P O B E N C H  - - - -'))
     if upload:
         if not can_upload():
-            raise MenpoCDNCredentialsMissingError('MENPO_CDN_S3_ACCESS_KEY and '
-                                                  'MENPO_CDN_S3_SECRECT_KEY both are '
-                                                  'needed to upload cached results')
+            raise MenpoCDNCredentialsMissingError(
+                'MENPO_CDN_S3_ACCESS_KEY and MENPO_CDN_S3_SECRECT_KEY both are'
+                ' needed to upload cached results')
         print(centre_str('** MENPO CDN UPLOAD ENABLED **'))
         if force_upload:
             print(centre_str('** UPLOAD FORCED **'))
@@ -92,103 +85,101 @@ def invoke_benchmark(experiment_name, output_dir=None, overwrite=False,
         results_dir = output_dir / 'results'
         errors_dir.mkdir()
         results_dir.mkdir()
-        results_methods_dir = results_dir / 'methods'
+        results_trainable_dir = results_dir / 'trainable_methods'
         results_untrainable_dir = results_dir / 'untrainable_methods'
-        errors_methods_dir = errors_dir / 'methods'
+        errors_trainable_dir = errors_dir / 'trainable_methods'
         errors_untrainable_dir = errors_dir / 'untrainable_methods'
         save_yaml(ex.config, str(output_dir / 'experiment.yaml'))
-    # Loop over all requested methods, training and testing them.
-    # Note that methods are, by definition trainable.
+
+    run = partial(run_method, ex, upload=upload, force=force,
+                  force_upload=force_upload, matlab=matlab,
+                  output=(output_dir is not None))
     try:
         if ex.n_trainable_methods > 0:
             print(centre_str('I. TRAINABLE METHODS'))
             if output_dir is not None:
-                results_methods_dir.mkdir()
-                errors_methods_dir.mkdir()
+                results_trainable_dir.mkdir()
+                errors_trainable_dir.mkdir()
+            else:
+                results_trainable_dir = None
+                errors_trainable_dir = None
 
             for i, train in enumerate(ex.trainable_methods, 1):
                 print(centre_str('{}/{} - {}'.format(i, ex.n_trainable_methods,
                                                      train), c='='))
-                if not force:
-                    cachable = (ex.training.predefined and
-                                ex.testing.predefined and
-                                train.predefined)
-                    if cachable:
-                        id_ = ex.trainable_id(train)
-                        id_hash = hash_of_id(id_)[:5]
-                        print(centre_str('[ cachable: {} ]'.format(id_hash)))
-                        if force_upload and upload:
-                            results = invoke_train_and_test(train, ex.training,
-                                                            ex.testing)
-                            print('Uploading results for {} '
-                                  '(forced)'.format(id_hash))
-                            upload_results(results, id_)
-                        else:
-                            try:
-                                results = retrieve_cached_run(id_)
-                            except CachedExperimentNotAvailable:
-                                print('No cached version of '
-                                      '{}.'.format(id_hash))
-                                results = invoke_train_and_test(train,
-                                                                ex.training,
-                                                                ex.testing)
-                                if upload:
-                                    print('Uploading results for '
-                                          '{}'.format(id_hash))
-                                    upload_results(results, id_)
-                            else:
-                                if upload:
-                                    print('Skipping upload of {} - already '
-                                          'saved'.format(id_hash))
-                    elif output_dir is not None:
-                        raise ValueError('Running upload but encounted an '
-                                         'uncachable run')
-                    else:
-                        results = invoke_train_and_test(train, ex.training,
-                                                        ex.testing)
-                else:
-                    results = invoke_train_and_test(train, ex.training,
-                                                    ex.testing)
-
-                if output_dir is not None:
-                    save_test_results(results, train.name, results_methods_dir,
-                                      matlab=matlab)
-                    compute_and_save_errors(results, ex.error_metrics,
-                                            train.name, errors_methods_dir)
-                    print("Results saved for '{}'.\n".format(train))
+                run(train, trainable=True,
+                    errors_dir=errors_trainable_dir,
+                    results_dir=results_trainable_dir)
 
         if ex.n_untrainable_methods > 0:
             print(centre_str('II. UNTRAINABLE METHODS', c=' '))
-            results_untrainable_dir.mkdir()
-            errors_untrainable_dir.mkdir()
+            if output_dir is not None:
+                results_untrainable_dir.mkdir()
+                errors_untrainable_dir.mkdir()
+            else:
+                results_untrainable_dir = None
+                errors_untrainable_dir = None
 
             for i, test in enumerate(ex.untrainable_methods, 1):
-                print(centre_str('{}/{} - {}'.format(i,
-                                                     ex.n_untrainable_methods,
-                                                     test), c='='))
-
-                # A. Testing
-                print(centre_str('testing', c='-'))
-
-                if (ex.testing.predefined and test.predefined):
-                    print('testing, and method predefined - checking hash')
-                    print(ex.untrainable_method_id(test))
-
-                test_set = ex.load_testing_data()
-                print("Testing '{}' with {}".format(test, test_set))
-                results = test(test_set)
-
-                # B. Save results
-                results_dict = {i: r for i, r in zip(test_set.generator.ids,
-                                                     results)}
-                save_test_results(results_dict, test.name,
-                                  results_untrainable_dir, matlab=matlab)
-                compute_and_save_errors(test_set.gt_shapes, results, ex.error_metrics,
-                            test.name, errors_untrainable_dir)
-                print("Testing of '{}' completed.".format(test))
+                print(centre_str('{}/{} - '
+                                 '{}'.format(i, ex.n_untrainable_methods,
+                                             test), c='='))
+                run(test, trainable=False,
+                    errors_dir=errors_untrainable_dir,
+                    results_dir=results_untrainable_dir)
 
         # We now have all the results computed - draw the CED curves.
         if output_dir is not None:
             plot_ceds(output_dir)
     finally:
         TempDirectory.delete_all()
+
+# Runs a single method in an experiment.
+def run_method(ex, method, trainable=True, upload=False, force=False,
+               force_upload=False, output=False, errors_dir=None,
+               results_dir=None, matlab=False):
+    id_f = ex.trainable_id if trainable else ex.untrainable_id
+    run = (partial(invoke_train_and_test, ex.training) if trainable
+           else invoke_test)
+    cachable = ex.testing.predefined and method.predefined
+    if trainable:
+        # to cache a trainable method we also need the experiment training
+        # to be predefined
+        cachable = cachable and ex.training.predefined
+
+    if not force:
+        if cachable:
+            id_ = id_f(method)
+            id_hash = hash_of_id(id_)[:5]
+            print(centre_str('[ cachable: {} ]'.format(id_hash)))
+            if force_upload and upload:
+                results = run(method, ex.testing)
+                print('Uploading results for {} (forced)'.format(id_hash))
+                upload_results(results, id_)
+            else:
+                try:
+                    results = retrieve_results(id_)
+                except CachedExperimentNotAvailable:
+                    print('No cached version of {}.'.format(id_hash))
+                    results = run(method, ex.testing)
+                    if upload:
+                        print('Uploading results for {}'.format(id_hash))
+                        upload_results(results, id_)
+                else:
+                    if upload:
+                        print('Skipping upload of {} - already '
+                              'saved'.format(id_hash))
+        elif output_dir is not None:
+            raise ValueError('Running upload but encountered an '
+                             'non-predefined (uncachable) '
+                             'experiment component')
+        else:
+            results = run(method, ex.testing)
+    else:
+        results = run(method, ex.testing)
+
+    if output:
+        save_test_results(results, method.name, results_dir, matlab=matlab)
+        compute_and_save_errors(results, ex.error_metrics, method.name,
+                                errors_dir)
+        print("Results saved for '{}'.\n".format(method))
