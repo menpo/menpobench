@@ -4,3 +4,5 @@ required:
   cache_dir: //any
 optional:
   matlab_bin_path: //any
+  MENPO_CDN_S3_ACCESS_KEY: //any
+  MENPO_CDN_S3_SECRET_KEY: //any

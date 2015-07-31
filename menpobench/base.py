@@ -6,6 +6,39 @@ from menpobench.experiment import retrieve_experiment
 from menpobench.output import save_test_results, save_errors, plot_ceds
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 from menpobench.method.matlab.base import resolve_matlab_bin_path
+from menpobench.cache import retrieve_cached_run
+from menpobench.exception import CachedExperimentNotAvailable
+
+
+def invoke_train(train, training_f):
+    print(centre_str('training', c='-'))
+    print("Training '{}' with {}".format(train, training_f))
+    train_set = training_f()
+    test = train(train_set)
+    print("Training of '{}' completed.".format(train))
+    return test
+
+def invoke_test(test, testing_f):
+    print(centre_str('testing', c='-'))
+    print("Testing '{}' with {}".format(test, testing_f))
+    test_set = testing_f()
+    results = test(test_set)
+    print("Testing of '{}' completed.\n".format(test))
+    return results, test_set
+
+def invoke_train_and_test(train, training_f, testing_f):
+    test = invoke_train(train, training_f)
+    return invoke_test(test, testing_f)
+
+
+def save_results(results, test_set, method, error_metrics):
+    # C. Save results
+    results_dict = {i: r for i, r in zip(test_set.ids, results)}
+    save_test_results(results_dict, method.name,
+                      results_methods_dir, matlab=matlab)
+    save_errors(test_set.gt_shapes, results, error_metrics,
+                method.name, errors_methods_dir)
+    print("Results saved for '{}'.\n".format(method))
 
 
 def invoke_benchmark(experiment_name, output_dir, overwrite=False,
@@ -61,26 +94,28 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                 print(centre_str('{}/{} - {}'.format(i, ex.n_trainable_methods,
                                                      train), c='='))
 
-                # A. Training
-                print(centre_str('training', c='-'))
-                print("Training '{}' with {}".format(train, ex.training))
-                train_set = ex.training()
-                test = train(train_set)
-                print("Training of '{}' completed.".format(train))
-
-                # B. Testing
-                print(centre_str('testing', c='-'))
-                print("Testing '{}' with {}".format(test, ex.testing))
-                test_set = ex.testing()
-                results = test(test_set)
-
-                # C. Save results
-                results_dict = {i: r for i, r in zip(test_set.ids, results)}
-                save_test_results(results_dict, test.name,
+                if (ex.training.predefined and ex.testing.predefined and
+                    train.predefined):
+                    print('checking hash')
+                    try:
+                        results = retrieve_cached_run(
+                            ex.trainable_method_id(train))
+                    except CachedExperimentNotAvailable:
+                        print('no cached version available. Training anyway')
+                        results, test_set = invoke_train_and_test(train,
+                                                                  ex.training,
+                                                                  ex.testing)
+                else:
+                    results, test_set = invoke_train_and_test(train,
+                                                              ex.training,
+                                                              ex.testing)
+                    # C. Save results
+                    results_dict = {i: r for i, r in zip(test_set.ids, results)}
+                save_test_results(results_dict, train.name,
                                   results_methods_dir, matlab=matlab)
                 save_errors(test_set.gt_shapes, results, ex.error_metrics,
-                            test.name, errors_methods_dir)
-                print("Testing of '{}' completed.\n".format(test))
+                            train.name, errors_methods_dir)
+                print("Results saved for '{}'.\n".format(train))
 
         if ex.n_untrainable_methods > 0:
             print(centre_str('II. UNTRAINABLE METHODS', c=' '))
@@ -96,6 +131,11 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
 
                 # A. Testing
                 print(centre_str('testing', c='-'))
+
+                if (ex.testing.predefined and test.predefined):
+                    print('testing, and method predefined - checking hash')
+                    print(ex.untrainable_method_id(test))
+
                 test_set = ex.load_testing_data()
                 print("Testing '{}' with {}".format(test, test_set))
                 results = test(test_set)

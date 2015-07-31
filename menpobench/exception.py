@@ -3,6 +3,11 @@ class ModuleNotFoundError(Exception):
     pass
 
 
+# There is no cached experiment file for this experiment
+class CachedExperimentNotAvailable(Exception):
+    pass
+
+
 # A schema-level error - e.g. a missing/mistyped key in a YAML file.
 class SchemaError(Exception):
 

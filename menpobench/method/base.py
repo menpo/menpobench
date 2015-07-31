@@ -1,7 +1,11 @@
 from menpobench import predefined_dir
-from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
+from menpobench.lmprocess import (retrieve_lm_processes,
+                                  apply_lm_process_to_img,
+                                  id_of_lm_process_or_none)
 from menpobench.utils import (load_module_with_error_messages, load_schema,
-                              memoize, load_callable_with_error_messages)
+                              memoize, load_callable_with_error_messages,
+                              predefined_module)
+
 
 
 def predefined_trainable_method_dir():
@@ -67,6 +71,10 @@ class Method(object):
     def depends_on_matlab(self):
         return 'matlab' in self.dependencies
 
+    @property
+    def predefined(self):
+        return predefined_module(self.name)
+
     def __str__(self):
         return self.name
 
@@ -98,6 +106,18 @@ class Train(Method):
         return Test(test, self.name, self.metadata, self.lm_pre_test,
                     self.lm_post_test)
 
+    @property
+    def id(self):
+        lm_pre_train_id = id_of_lm_process_or_none(self.lm_pre_train)
+        lm_pre_test_id = id_of_lm_process_or_none(self.lm_pre_test)
+        lm_post_test_id = id_of_lm_process_or_none(self.lm_post_test)
+        return {
+            'name': self.name,
+            'lm_pre_train': lm_pre_train_id,
+            'lm_pre_test': lm_pre_test_id,
+            'lm_post_test': lm_post_test_id
+        }
+
 
 class Test(Method):
 
@@ -116,6 +136,16 @@ class Test(Method):
         if self.lm_post_test is not None:
             results = [r.apply_lm_process(self.lm_post_test) for r in results]
         return results
+
+    @property
+    def id(self):
+        lm_pre_test_id = id_of_lm_process_or_none(self.lm_pre_test)
+        lm_post_test_id = id_of_lm_process_or_none(self.lm_post_test)
+        return {
+            'name': self.name,
+            'lm_pre_test': lm_pre_test_id,
+            'lm_post_test': lm_post_test_id
+        }
 
 
 def retrieve_trainable_method(method_def):

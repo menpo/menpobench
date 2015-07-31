@@ -1,11 +1,13 @@
 from itertools import chain
 from functools import partial
 from menpobench import predefined_dir
-from menpobench.lmprocess import retrieve_lm_processes, apply_lm_process_to_img
+from menpobench.lmprocess import (retrieve_lm_processes,
+                                  apply_lm_process_to_img,
+                                  id_of_lm_process_or_none)
 from menpobench.imgprocess import basic_img_process
 from menpobench.utils import (load_module_with_error_messages,
                               load_callable_with_error_messages, load_schema,
-                              memoize)
+                              memoize, predefined_module)
 
 
 def predefined_dataset_dir():
@@ -78,11 +80,25 @@ def trainset_wrapper(id_img_gen):
 # a single dataset. Call provides a generator of (id, image) pairs.
 class Dataset(object):
 
-    def __init__(self, dataset_gen_f, name, metadata, lm_process=None):
+    def __init__(self, dataset_gen_f, name, metadata, lm_post_load=None):
         self.name = name
         self.metadata = metadata
         self.dataset_gen_f = dataset_gen_f
-        self.lm_process = lm_process
+        self.lm_post_load = lm_post_load
+
+    @property
+    def predefined(self):
+        p = predefined_module(self.name)
+        if self.lm_post_load is not None:
+            p = p and self.lm_post_load.predefined
+        return p
+
+    @property
+    def id(self):
+        return {
+            'name': self.name,
+            'lm_post_load': id_of_lm_process_or_none(self.lm_post_load)
+        }
 
     def __call__(self):
         # we have a hold on the loading function, but we have some base
@@ -91,11 +107,11 @@ class Dataset(object):
         gen = wrap_dataset_with_processing(self.dataset_gen_f(),
                                            basic_img_process)
 
-        if self.lm_process is not None:
+        if self.lm_post_load is not None:
             # the specified lm_processes needs to be added after basic
             # processing
             # -> take the landmark processing and apply it to each image
-            img_lm_process = partial(apply_lm_process_to_img, self.lm_process)
+            img_lm_process = partial(apply_lm_process_to_img, self.lm_post_load)
             gen = wrap_dataset_with_processing(gen, img_lm_process)
 
         return gen
@@ -108,6 +124,17 @@ class DatasetChain(object):
     def __init__(self, datasets, test=False):
         self.datasets = datasets
         self.test = test
+
+    @property
+    def predefined(self):
+        for d in self.datasets:
+            if not d.predefined:
+                return False
+        return True
+
+    @property
+    def id(self):
+        return tuple(d.id for d in self.datasets)
 
     def __call__(self):
         # chain together the datasets, and add process reporting
@@ -133,7 +160,7 @@ def retrieve_dataset(dataset_def):
             lm_process = retrieve_lm_processes(lm_process_def)
 
     dataset_gen_f, metadata = load_and_validate_dataset_module(name)
-    return Dataset(dataset_gen_f, name, metadata, lm_process=lm_process)
+    return Dataset(dataset_gen_f, name, metadata, lm_post_load=lm_process)
 
 
 def retrieve_datasets(dataset_defs, test=False):

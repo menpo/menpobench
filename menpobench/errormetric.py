@@ -1,6 +1,6 @@
-from functools import partial
 from menpobench import predefined_dir
-from menpobench.utils import load_module_with_error_messages
+from menpobench.utils import (load_module_with_error_messages,
+                              load_callable_with_error_messages)
 
 
 def predefined_error_metric_dir():
@@ -15,14 +15,13 @@ def list_predefined_error_metrics():
     return sorted([p.stem for p in predefined_error_metric_dir().glob('*.py')])
 
 
-load_module_for_process = partial(load_module_with_error_messages,
-                                  'error metric',
-                                  predefined_error_metric_path)
-
-
-def retrieve_error_metric(error_metric_name):
-    module = load_module_for_process(error_metric_name)
-    return error_metric_name, getattr(module, 'error_metric')
+def retrieve_error_metric(name):
+    module = load_module_with_error_messages('error metric',
+                                             predefined_error_metric_path,
+                                             name)
+    metric = load_callable_with_error_messages(module, 'error_metric', name,
+                                               module_type='error metric')
+    return name, metric
 
 
 def retrieve_error_metrics(error_metrics_def):

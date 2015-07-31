@@ -3,13 +3,13 @@ from subprocess import CalledProcessError
 from pathlib import Path
 import shutil
 from menpobench import configure_matlab_bin_path
-from menpobench.config import (is_linux, is_osx, is_windows,
-                               resolve_config_path)
+from menpobench.config import load_config
 from menpobench.exception import MissingConfigKeyError
 from menpobench.method.base import (predefined_trainable_method_dir,
                                     BenchResult)
 from menpobench.method.io import images_to_mat
-from menpobench.utils import invoke_process, TempDirectory
+from menpobench.utils import (invoke_process, TempDirectory, memoize,
+                              is_windows, is_osx, is_linux)
 
 _POTENTIAL_RELEASES = ['2015a', '2014b', '2014a', '2013b', '2013a', '2012b',
                        '2012a']
@@ -17,9 +17,6 @@ _DEFAULT_OSX_PATHS = ['/Applications/MATLAB_R{}.app/bin/matlab']
 _DEFAULT_WINDOWS_PATHS = [r'C:\Program Files\MATLAB\R{}\bin\matlab.exe',
                           r'C:\Program Files (x86)\MATLAB\R{}\bin\matlab.exe']
 _DEFAULT_LINUX_PATHS = ['/usr/local/MATLAB/R{}/bin/matlab']
-
-
-_matlab_bin_path = None
 
 
 def matlab_functions_dir():
@@ -63,17 +60,11 @@ def find_matlab_binary():
     return matlab_path
 
 
+@memoize
 def resolve_matlab_bin_path(verbose=False):
-    global _matlab_bin_path
-    if _matlab_bin_path is not None:
-        return _matlab_bin_path
-
-    from menpobench.utils import load_yaml
-    config_path = resolve_config_path()
-
     try:
         # Will throw key error if matlab_bin_path does not exist
-        matlab_bin_path = Path(load_yaml(config_path)['matlab_bin_path'])
+        matlab_bin_path = Path(load_config()['matlab_bin_path'])
     except KeyError:
         # OK, there's no known matlab path, lets be proactive and try and
         # find it ourselves
@@ -83,14 +74,12 @@ def resolve_matlab_bin_path(verbose=False):
             raise MissingConfigKeyError('matlab_bin_path')
         else:  # Save the found matlab path
             if verbose:
-                print('Automatically found Matlab path: {}'.format(matlab_bin_path))
+                print('Saving automatically found Matlab path to config')
             configure_matlab_bin_path(matlab_bin_path)
 
     if verbose:
         print('Matlab path: {}'.format(matlab_bin_path))
-    # Cache the result so we don't keep querying the rc file
-    _matlab_bin_path = matlab_bin_path
-    return _matlab_bin_path
+    return matlab_bin_path
 
 
 def invoke_matlab(command):

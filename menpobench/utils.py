@@ -1,13 +1,15 @@
 import hashlib
+import platform
 import subprocess
 import tarfile
 import tempfile
 import shutil
+from copy import deepcopy
 from inspect import isgeneratorfunction
 try:
-    from urllib2 import urlopen  # Py2
+    from urllib2 import urlopen, HTTPError  # Py2
 except ImportError:
-    from urllib.request import urlopen  # Py3
+    from urllib.request import urlopen, HTTPError # Py3
 import imp
 import os
 import zipfile
@@ -103,9 +105,13 @@ def invoke_process(command_list):
     subprocess.check_call(command_list)
 
 
+def predefined_module(name):
+    return not name.endswith('.py')
+
+
 def load_module_with_error_messages(module_type, predefined_f, name,
                                     metadata_schema=None):
-    custom = name.endswith('.py')
+    custom = not predefined_module(name)
     template = "custom {} at path '{}'" if custom else "predefined {} '{}'"
     msg = template.format(module_type, name)
     path = Path(name) if custom else predefined_f(name)
@@ -168,6 +174,7 @@ def save_yaml(obj, filepath):
 
 
 def load_json(filepath):
+    print(Path(filepath).suffix)
     with open(norm_path(filepath), 'rt') as f:
         y = json.load(f)
     return y
@@ -208,7 +215,7 @@ def memoize(f):
     def wrapped():
         if _namespace['result'] is None:
             _namespace['result'] = f()
-        return _namespace['result']
+        return deepcopy(_namespace['result'])
 
     return wrapped
 
@@ -268,3 +275,15 @@ def wrap_generator(generator, f):
     """
     for x in generator:
         yield f(x)
+
+
+def is_windows():
+    return 'windows' in platform.system().lower()
+
+
+def is_osx():
+    return 'darwin' in platform.system().lower()
+
+
+def is_linux():
+    return 'linux' in platform.system().lower()

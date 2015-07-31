@@ -68,6 +68,28 @@ class Experiment(object):
             self.untrainable_methods = []
 
     @property
+    def training_id(self):
+        return self.training.id if self.training is not None else None
+
+    @property
+    def testing_id(self):
+        return self.testing.id
+
+
+    def trainable_method_id(self, trainable_method):
+        return {
+            'training': self.training_id,
+            'trainable_method': trainable_method.id,
+            'testing': self.testing.id
+        }
+
+    def untrainable_method_id(self, untrainable_method):
+        return {
+            'untrainable_method': untrainable_method.id,
+            'testing': self.testing.id
+        }
+
+    @property
     def all_methods(self):
         return self.trainable_methods + self.untrainable_methods
 

@@ -1,11 +1,13 @@
 import os
-import platform
+from menpobench import predefined_dir
+
 from pathlib import Path
+
 from menpobench.exception import MissingConfigKeyError
 from menpobench.utils import create_path, load_schema, memoize, load_yaml
-from menpobench import predefined_dir
 from menpobench.schema import schema_error_report, schema_is_valid
 from menpobench.exception import SchemaError
+
 
 def custom_config_path():
     return Path(os.path.expanduser('~')) / '.menpobenchrc'
@@ -37,11 +39,14 @@ def resolve_config_path():
 
 
 @memoize
+def load_config():
+    return load_yaml(resolve_config_path())
+
+
 @create_path
 def resolve_cache_dir(verbose=False):
-    config_path = resolve_config_path()
     try:
-        cache_dir = Path(load_yaml(config_path)['cache_dir'])
+        cache_dir = Path(load_config()['cache_dir'])
     except KeyError as e:
         raise MissingConfigKeyError(e.message)
     if verbose:
@@ -70,15 +75,3 @@ def clear_custom_config():
     p = custom_config_path()
     if p.is_file():
         p.unlink()
-
-
-def is_windows():
-    return 'windows' in platform.system().lower()
-
-
-def is_osx():
-    return 'darwin' in platform.system().lower()
-
-
-def is_linux():
-    return 'linux' in platform.system().lower()
