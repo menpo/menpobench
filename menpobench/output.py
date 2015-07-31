@@ -1,3 +1,4 @@
+import numpy as np
 from pathlib import Path
 from collections import namedtuple
 from menpobench.utils import save_json, load_json
@@ -5,22 +6,20 @@ from menpobench.utils import save_json, load_json
 ErrorResult = namedtuple('ErrorResult', ['errors', 'path'])
 
 def save_test_results(results, method_name, output_dir, matlab=False):
-    json = {i: r.tojson() for i, r in results.items()}
-    save_json(json, str(output_dir / '{}.json'.format(method_name)),
+    save_json(results, str(output_dir / '{}.json'.format(method_name)),
               pretty=True)
     if matlab:
         print('TODO: export .mat file here.')
 
 
-def save_errors(gt_shapes, results, error_metrics, method_name, output_dir):
-    final_shapes = [r.final_shape for r in results]
+def compute_and_save_errors(results, error_metrics, method_name, output_dir):
     json = {}
-    for i, (error_name, error_metric) in enumerate(error_metrics):
+    for error_name, error_metric in error_metrics:
         # error_name may be a path or a predefined
-        name = '{}_{}'.format(i, Path(error_name).name.replace('.', '_'))
-        errors = [float(error_metric(g, f))
-                  for g, f in zip(gt_shapes, final_shapes)]
-        json[name] = errors
+        name = Path(error_name).name.replace('.', '_')
+        json[name] = [float(error_metric(np.array(r['gt']),
+                                         np.array(r['result']['final'])))
+                      for r in results.values()]
     save_json(json, str(output_dir / '{}.json'.format(method_name)),
               pretty=True)
 

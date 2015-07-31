@@ -6,7 +6,7 @@
 path to a .yaml experiment configuration file.
 
 Usage:
-  menpobench run <experiment_config> [--output <dir>] [--overwrite] [--mat]
+  menpobench run <experiment_config> [--output <dir>] [--overwrite] [--mat] [--upload]
   menpobench list
   menpobench test [-v]
   menpobench config <config_key> <config_value>
@@ -17,7 +17,7 @@ Options:
   --output -o <dir>  Output directory [default: ./menpobench_result].
   --overwrite        Any existing output dir will be removed.
   --mat              A Matlab .mat file will be saved out for each method.
-  --list             List all available predefined experiment components.
+  --upload           Upload new test results to the Menpo CDN (requires credentials)
   -h --help          Show this screen.
   --version          Show version.
 """
@@ -29,7 +29,8 @@ from menpobench import (invoke_benchmark, configure_cache_dir,
 from menpobench.config import save_custom_config
 from menpobench.utils import centre_str
 from menpobench.exception import (ModuleNotFoundError, SchemaError,
-                                  MissingMetadataError, MissingConfigKeyError)
+                                  MissingMetadataError, MissingConfigKeyError,
+                                  MenpoCDNCredentialsMissingError)
 
 
 def invoke_benchmark_with_config_prompts(*args, **kwargs):
@@ -81,6 +82,13 @@ def invoke_benchmark_with_config_prompts(*args, **kwargs):
         print(e)
         print('Correct this issue and try running menpobench again.')
         exit(1)
+    except MenpoCDNCredentialsMissingError as e:
+        print('')
+        print(centre_str('-- MENPO CDN CREDENTIALS MISSING --'))
+        print('')
+        print(e)
+        print('Correct this issue and try running menpobench again.')
+        exit(1)
     except Exception:
         print('\n')
         print(centre_str('ERROR', c='!'))
@@ -125,7 +133,8 @@ if __name__ == '__main__':
         invoke_benchmark_with_config_prompts(a['<experiment_config>'],
                                              a['--output'],
                                              overwrite=a['--overwrite'],
-                                             matlab=a['--mat'])
+                                             matlab=a['--mat'],
+                                             upload=a['--upload'])
     elif a['test']:
         from menpobench.test import run_test_suite
         print(run_test_suite(verbose=a['-v']))

@@ -69,3 +69,17 @@ def retrieve_upload_credentials():
         raise MissingConfigKeyError('MENPO_CDN_S3_ACCESS_KEY and '
                                     'MENPO_CDN_S3_SECRECT_KEY both are '
                                     'needed to upload cached results')
+
+
+def can_upload():
+    try:
+        retrieve_upload_credentials()
+    except MissingConfigKeyError:
+        return False
+    else:
+        return True
+
+
+def upload_results(results):
+    cred = retrieve_upload_credentials()
+    print('uploading')

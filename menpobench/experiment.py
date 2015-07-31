@@ -75,15 +75,14 @@ class Experiment(object):
     def testing_id(self):
         return self.testing.id
 
-
-    def trainable_method_id(self, trainable_method):
+    def trainable_id(self, trainable_method):
         return {
             'training': self.training_id,
             'trainable_method': trainable_method.id,
             'testing': self.testing.id
         }
 
-    def untrainable_method_id(self, untrainable_method):
+    def untrainable_id(self, untrainable_method):
         return {
             'untrainable_method': untrainable_method.id,
             'testing': self.testing.id

@@ -3,11 +3,12 @@ import menpobench
 import shutil
 from menpobench.config import resolve_cache_dir
 from menpobench.experiment import retrieve_experiment
-from menpobench.output import save_test_results, save_errors, plot_ceds
+from menpobench.output import save_test_results, compute_and_save_errors, plot_ceds
 from menpobench.utils import centre_str, TempDirectory, norm_path, save_yaml
 from menpobench.method.matlab.base import resolve_matlab_bin_path
-from menpobench.cache import retrieve_cached_run
-from menpobench.exception import CachedExperimentNotAvailable
+from menpobench.cache import retrieve_cached_run, can_upload, upload_results
+from menpobench.exception import (CachedExperimentNotAvailable,
+                                  MenpoCDNCredentialsMissingError)
 
 
 def invoke_train(train, training_f):
@@ -24,7 +25,9 @@ def invoke_test(test, testing_f):
     test_set = testing_f()
     results = test(test_set)
     print("Testing of '{}' completed.\n".format(test))
-    return results, test_set
+    return {id_: {'gt': gt.points.tolist(),
+                  'result': r.tojson()}
+            for (id_, r, gt) in zip(test_set.ids, results, test_set.gt_shapes)}
 
 def invoke_train_and_test(train, training_f, testing_f):
     test = invoke_train(train, training_f)
@@ -36,19 +39,26 @@ def save_results(results, test_set, method, error_metrics):
     results_dict = {i: r for i, r in zip(test_set.ids, results)}
     save_test_results(results_dict, method.name,
                       results_methods_dir, matlab=matlab)
-    save_errors(test_set.gt_shapes, results, error_metrics,
+    compute_and_save_errors(test_set.gt_shapes, results, error_metrics,
                 method.name, errors_methods_dir)
     print("Results saved for '{}'.\n".format(method))
 
 
 def invoke_benchmark(experiment_name, output_dir, overwrite=False,
-                     matlab=False):
+                     matlab=False, upload=False):
     print('')
     print(centre_str('- - - -  M E N P O B E N C H  - - - -'))
     print(centre_str('v' + menpobench.__version__))
     print(centre_str('config: {}'.format(experiment_name)))
     print(centre_str('output: {}'.format(output_dir)))
     print(centre_str('cache: {}'.format(resolve_cache_dir())))
+    if upload:
+        if not can_upload():
+            raise MenpoCDNCredentialsMissingError('MENPO_CDN_S3_ACCESS_KEY and '
+                                                  'MENPO_CDN_S3_SECRECT_KEY both are '
+                                                  'needed to upload cached results')
+        else:
+            print(centre_str('** MENPO CDN UPLOAD ENABLED **'))
 
     # Load the experiment and check it's schematically valid
     ex = retrieve_experiment(experiment_name)
@@ -89,32 +99,29 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
             errors_methods_dir.mkdir()
 
             for i, train in enumerate(ex.trainable_methods, 1):
-
-                # Retrieval
                 print(centre_str('{}/{} - {}'.format(i, ex.n_trainable_methods,
                                                      train), c='='))
-
-                if (ex.training.predefined and ex.testing.predefined and
-                    train.predefined):
-                    print('checking hash')
+                cachable = (ex.training.predefined and
+                            ex.testing.predefined and
+                            train.predefined)
+                if cachable:
                     try:
-                        results = retrieve_cached_run(
-                            ex.trainable_method_id(train))
+                        results = retrieve_cached_run(ex.trainable_id(train))
                     except CachedExperimentNotAvailable:
                         print('no cached version available. Training anyway')
-                        results, test_set = invoke_train_and_test(train,
-                                                                  ex.training,
-                                                                  ex.testing)
+                        results = invoke_train_and_test(train, ex.training,
+                                                        ex.testing)
+                        if upload:
+                            print('attempting to upload new results')
+                            upload_results(results)
                 else:
-                    results, test_set = invoke_train_and_test(train,
-                                                              ex.training,
-                                                              ex.testing)
-                    # C. Save results
-                    results_dict = {i: r for i, r in zip(test_set.ids, results)}
-                save_test_results(results_dict, train.name,
-                                  results_methods_dir, matlab=matlab)
-                save_errors(test_set.gt_shapes, results, ex.error_metrics,
-                            train.name, errors_methods_dir)
+                    results = invoke_train_and_test(train, ex.training,
+                                                    ex.testing)
+
+                save_test_results(results, train.name, results_methods_dir,
+                                  matlab=matlab)
+                compute_and_save_errors(results, ex.error_metrics,
+                                        train.name, errors_methods_dir)
                 print("Results saved for '{}'.\n".format(train))
 
         if ex.n_untrainable_methods > 0:
@@ -123,8 +130,6 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
             errors_untrainable_dir.mkdir()
 
             for i, test in enumerate(ex.untrainable_methods, 1):
-
-                # Retrieval
                 print(centre_str('{}/{} - {}'.format(i,
                                                      ex.n_untrainable_methods,
                                                      test), c='='))
@@ -145,7 +150,7 @@ def invoke_benchmark(experiment_name, output_dir, overwrite=False,
                                                      results)}
                 save_test_results(results_dict, test.name,
                                   results_untrainable_dir, matlab=matlab)
-                save_errors(test_set.gt_shapes, results, ex.error_metrics,
+                compute_and_save_errors(test_set.gt_shapes, results, ex.error_metrics,
                             test.name, errors_untrainable_dir)
                 print("Testing of '{}' completed.".format(test))
 
