@@ -6,7 +6,8 @@
 path to a .yaml experiment configuration file.
 
 Usage:
-  menpobench run <experiment_config> [--output <dir>] [--overwrite] [--mat] [--upload]
+  menpobench run <experiment_config> [--output <dir>] [--overwrite] [--mat] [--force]
+  menpobench upload <experiment_config> [--force]
   menpobench list
   menpobench test [-v]
   menpobench config <config_key> <config_value>
@@ -14,10 +15,11 @@ Usage:
   menpobench --version
 
 Options:
+  upload             Upload new test results to the Menpo CDN (requires credentials)
   --output -o <dir>  Output directory [default: ./menpobench_result].
   --overwrite        Any existing output dir will be removed.
+  --force            Ignore the Menpo CDN and run the experiment locally.
   --mat              A Matlab .mat file will be saved out for each method.
-  --upload           Upload new test results to the Menpo CDN (requires credentials)
   -h --help          Show this screen.
   --version          Show version.
 """
@@ -131,10 +133,15 @@ if __name__ == '__main__':
         list_all_predefined()
     elif a['run']:
         invoke_benchmark_with_config_prompts(a['<experiment_config>'],
-                                             a['--output'],
+                                             output_dir=a['--output'],
                                              overwrite=a['--overwrite'],
                                              matlab=a['--mat'],
-                                             upload=a['--upload'])
+                                             force=a['--force'])
+    elif a['upload']:
+        print('test')
+        invoke_benchmark_with_config_prompts(a['<experiment_config>'],
+                                             upload=True,
+                                             force_upload=a['--force'])
     elif a['test']:
         from menpobench.test import run_test_suite
         print(run_test_suite(verbose=a['-v']))
