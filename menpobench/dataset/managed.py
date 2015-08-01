@@ -4,7 +4,7 @@ from menpobench.managed import WebSource, MENPO_CDN_URL, managed_asset
 from menpobench.utils import create_path, extract_archive
 
 MENPO_CDN_DATASET_URL = MENPO_CDN_URL + 'datasets/'
-
+MENPO_GITHUB_URL_TEMPLATE = 'https://github.com/menpo/{name}/releases/download/{version}/{name}.tar.gz'
 
 # ----------- Cache path management ---------- #
 
@@ -22,9 +22,6 @@ def download_dataset_dir():
 
 class DatasetSource(WebSource):
 
-    def __init__(self, name, url, sha1):
-        super(DatasetSource, self).__init__(name, url, sha1)
-
     def _download_cache_dir(self):
         return download_dataset_dir()
 
@@ -34,6 +31,20 @@ class CDNDatasetSource(DatasetSource):
     def __init__(self, name, sha1):
         url = MENPO_CDN_DATASET_URL + '{}.tar.gz'.format(name)
         super(CDNDatasetSource, self).__init__(name, url, sha1)
+
+    def unpack(self):
+        # Extracts the archive into the unpacked dir - the unpacked
+        # path will then point to the folder because it is ASSUMED that the
+        # archive name matches the name of the asset and therefore the asset
+        # is actually completely contained inside self.unpacked_path()
+        extract_archive(self.archive_path(), self._unpacked_cache_dir())
+
+
+class GithubDatasetSource(DatasetSource):
+
+    def __init__(self, name, version, sha1):
+        url = MENPO_GITHUB_URL_TEMPLATE.format(name=name, version=version)
+        super(GithubDatasetSource, self).__init__(name, url, sha1)
 
     def unpack(self):
         # Extracts the archive into the unpacked dir - the unpacked
@@ -71,7 +82,8 @@ class CDNDatasetSource(DatasetSource):
 #
 _MANAGED_DATASET_LIST = [
     lambda: CDNDatasetSource('lfpw_micro', '0f34c94687e90334e012f188531157bd291d6095'),
-    lambda: CDNDatasetSource('lfpw', '5859560f8fc7de412d44619aeaba1d1287e5ede6')
+    lambda: CDNDatasetSource('lfpw', '5859560f8fc7de412d44619aeaba1d1287e5ede6'),
+    lambda: GithubDatasetSource('lfpw-train', 'v1', 'e7cad48bad4f959c6ff4fd707db8a7442ba2c72a')
 ]
 
 

@@ -9,6 +9,7 @@ Usage:
   menpobench run <experiment_config> [--output <dir>] [--overwrite] [--mat] [--force]
   menpobench upload <experiment_config> [--force]
   menpobench list
+  menpobench bbox <detector> <pattern> [--synthesize] [--overwrite]
   menpobench test [-v]
   menpobench config <config_key> <config_value>
   menpobench (-h | --help)
@@ -16,6 +17,7 @@ Usage:
 
 Options:
   upload             Upload new test results to the Menpo CDN (requires credentials)
+  bbox               Generate detector bounding boxes for images
   --output -o <dir>  Output directory [default: ./menpobench_result].
   --overwrite        Any existing output dir will be removed.
   --force            Ignore the Menpo CDN and run the experiment locally.
@@ -28,6 +30,7 @@ from docopt import docopt
 import menpobench
 from menpobench import (invoke_benchmark, configure_cache_dir,
                         configure_matlab_bin_path)
+from menpobench.bbox import save_bounding_boxes
 from menpobench.config import save_custom_config
 from menpobench.utils import centre_str
 from menpobench.exception import (ModuleNotFoundError, SchemaError,
@@ -147,3 +150,7 @@ if __name__ == '__main__':
         print(run_test_suite(verbose=a['-v']))
     elif a['config']:
         update_config(a['<config_key>'], a['<config_value>'])
+    elif a['bbox']:
+        save_bounding_boxes(a['<pattern>'], a['<detector>'],
+                            sythesize_problematic=a['--synthesize'],
+                            overwrite=a['--overwrite'])
