@@ -9,11 +9,11 @@ metadata = {
 
 
 def generate_dataset():
-    with managed_dataset('lfpw') as lfpw_path:
-        for path in list((lfpw_path / 'testset').glob('*.png'))[:20]:
-            img = mio.import_image(path, normalise=False)
+    with managed_dataset('lfpw') as p:
+        for img in mio.import_images(p / 'testset' / '*.png', normalise=False,
+                                     max_images=20):
             img.landmarks['gt'] = ibug_face_68(img.landmarks['PTS'])[1]
             # TODO make lfpw_test_dlib bounding boxes
             img.landmarks['bbox'] = img.landmarks['PTS'].lms.bounding_box()
             del img.landmarks['PTS']
-            yield path.stem, img
+            yield img.path.stem, img
