@@ -8,12 +8,18 @@ metadata = {
 }
 
 
+def _resolver(img):
+    p = img.path
+    return {
+        'gt': p.with_suffix('.pts'),
+        'bbox': p.with_name('{}_dlib.ljson'.format(p.stem))
+    }
+
+
 def generate_dataset():
-    with managed_dataset('lfpw') as p:
-        for img in mio.import_images(p / 'testset' / '*.png', max_images=20,
-                                     normalise=False, shuffle=True):
-            img.landmarks['gt'] = ibug_face_68(img.landmarks['PTS'])[1]
-            # TODO make lfpw_test_dlib bounding boxes
-            img.landmarks['bbox'] = img.landmarks['PTS'].lms.bounding_box()
-            del img.landmarks['PTS']
+    with managed_dataset('lfpw-test') as p:
+        for img in mio.import_images(p / '*.png', max_images=20,
+                                     normalise=False, shuffle=True,
+                                     landmark_resolver=_resolver):
+            img.landmarks['gt'] = ibug_face_68(img.landmarks['gt'])[1]
             yield img.path.stem, img

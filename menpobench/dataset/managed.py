@@ -81,9 +81,8 @@ class GithubDatasetSource(DatasetSource):
 #
 #
 _MANAGED_DATASET_LIST = [
-    lambda: CDNDatasetSource('lfpw_micro', '0f34c94687e90334e012f188531157bd291d6095'),
-    lambda: CDNDatasetSource('lfpw', '5859560f8fc7de412d44619aeaba1d1287e5ede6'),
-    lambda: GithubDatasetSource('lfpw-train', 'v1', 'e7cad48bad4f959c6ff4fd707db8a7442ba2c72a')
+    lambda: GithubDatasetSource('lfpw-test', 'v2', 'a90afa0b8997dfe50d89bf361a1a2f7285c5e17a'),
+    lambda: GithubDatasetSource('lfpw-train', 'v2', 'ba1a6f63b432f3e7ef0805943c699522a3029642')
 ]
 
 
