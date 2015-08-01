@@ -1,7 +1,9 @@
 training_data:
-    - lfpw_train_face_ibug_68_dlib
+    - name: lfpw_train_face_ibug_68_dlib
+      lm_post_load: [face_ibug_68_to_face_ibug_66]
 testing_data:
-    - lfpw_test_face_ibug_68_dlib
+    - name: lfpw_test_face_ibug_68_dlib
+      lm_post_load: [face_ibug_68_to_face_ibug_66]
 trainable_methods:
     - aam
 error_metric:

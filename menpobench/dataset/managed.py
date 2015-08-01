@@ -79,6 +79,10 @@ class GithubDatasetSource(DatasetSource):
 # 5. Add the dataset source to the _MANAGED_DATASET_LIST below as a
 #    CDNDatasetSource.
 #
+# Note that menpo-managed datasets are now stored on github, e.g.
+# menpo/lfpw-train. See https://gist.github.com/jabooth/990a4c3eae4e188a13e2
+# for a helpful gist for preparing releases of these datasets.
+#
 #
 _MANAGED_DATASET_LIST = [
     lambda: GithubDatasetSource('lfpw-test', 'v2', 'a90afa0b8997dfe50d89bf361a1a2f7285c5e17a'),
