@@ -17,6 +17,7 @@ from pathlib import Path
 import yaml
 import json
 import gzip
+import random
 from math import ceil, floor
 from menpobench.schema import schema_error_report, schema_is_valid
 from menpobench.exception import (ModuleNotFoundError, SchemaError,
@@ -289,3 +290,14 @@ def is_osx():
 
 def is_linux():
     return 'linux' in platform.system().lower()
+
+
+def randomly_exhaust(*iterables):
+    # randomly_exhaust('ABC', 'DEF') --> A B F E C D
+    pool = set(iterables)
+    while len(pool) > 0:
+        chosen = random.choice(tuple(pool))
+        try:
+            yield next(chosen)
+        except StopIteration:
+            pool.remove(chosen)

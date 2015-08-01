@@ -91,7 +91,7 @@ def get_asset(name, asset_set):
     if name not in asset_set:
         raise ValueError("'{}' is not a managed dataset".format(name))
     else:
-        return asset_set[name]
+        return asset_set[name]()
 
 
 def download_asset_if_needed(asset, verbose=False, checksum_fail=False):

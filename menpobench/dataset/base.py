@@ -1,4 +1,3 @@
-from itertools import chain
 from functools import partial
 from menpobench import predefined_dir
 from menpobench.lmprocess import (retrieve_lm_processes,
@@ -7,7 +6,7 @@ from menpobench.lmprocess import (retrieve_lm_processes,
 from menpobench.imgprocess import basic_img_process
 from menpobench.utils import (load_module_with_error_messages,
                               load_callable_with_error_messages, load_schema,
-                              memoize, predefined_module)
+                              memoize, predefined_module, randomly_exhaust)
 
 
 def predefined_dataset_dir():
@@ -137,10 +136,10 @@ class DatasetChain(object):
         return tuple(d.id for d in self.datasets)
 
     def __call__(self):
-        # chain together the datasets, and add process reporting
+        # draw from the datasets randomly, and add process reporting
         # notice that we invoke each dataset in turn.
-        id_img_gen = print_processing_status(chain(*(d() for d in
-                                                     self.datasets)))
+        id_img_gen = print_processing_status(randomly_exhaust(*(d() for d in
+                                                              self.datasets)))
         return (TestsetWrapper(id_img_gen) if self.test
                 else trainset_wrapper(id_img_gen))
 

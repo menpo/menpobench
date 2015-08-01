@@ -70,9 +70,9 @@ class CDNMethodsSource(MethodSource):
 #
 #
 _MANAGED_METHODS_LIST = [
-    MethodSource('yzt_iccv_2013',
-                 'http://uk.mathworks.com/matlabcentral/fileexchange/downloads/19680/akamai/tzimiro_ICCV2013_code.zip',
-                 'a68fb313a06468d5256b7c95437c016914753a5a')
+    lambda: MethodSource('yzt_iccv_2013',
+                         'http://uk.mathworks.com/matlabcentral/fileexchange/downloads/19680/akamai/tzimiro_ICCV2013_code.zip',
+                         'a68fb313a06468d5256b7c95437c016914753a5a')
 ]
 
 
@@ -81,11 +81,12 @@ _MANAGED_METHODS_LIST = [
 MANAGED_METHODS = {}
 
 for dataset in _MANAGED_METHODS_LIST:
-    if dataset.name in MANAGED_METHODS:
+    name = dataset().name
+    if name in MANAGED_METHODS:
         raise ValueError("Error - two managed methods with name "
-                         "'{}'".format(dataset.name))
+                         "'{}'".format(name))
     else:
-        MANAGED_METHODS[dataset.name] = dataset
+        MANAGED_METHODS[name] = dataset
 
 
 # ----------- Magic method contextmanager ---------- #

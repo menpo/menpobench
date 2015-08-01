@@ -70,8 +70,8 @@ class CDNDatasetSource(DatasetSource):
 #
 #
 _MANAGED_DATASET_LIST = [
-    CDNDatasetSource('lfpw_micro', '0f34c94687e90334e012f188531157bd291d6095'),
-    CDNDatasetSource('lfpw', '5859560f8fc7de412d44619aeaba1d1287e5ede6')
+    lambda: CDNDatasetSource('lfpw_micro', '0f34c94687e90334e012f188531157bd291d6095'),
+    lambda: CDNDatasetSource('lfpw', '5859560f8fc7de412d44619aeaba1d1287e5ede6')
 ]
 
 
@@ -80,11 +80,12 @@ _MANAGED_DATASET_LIST = [
 MANAGED_DATASETS = {}
 
 for dataset in _MANAGED_DATASET_LIST:
-    if dataset.name in MANAGED_DATASETS:
+    name = dataset().name
+    if name in MANAGED_DATASETS:
         raise ValueError("Error - two managed datasets with name "
-                         "'{}'".format(dataset.name))
+                         "'{}'".format(name))
     else:
-        MANAGED_DATASETS[dataset.name] = dataset
+        MANAGED_DATASETS[name] = dataset
 
 
 # ----------- Magic dataset contextmanager ---------- #
