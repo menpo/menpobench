@@ -24,7 +24,7 @@ optional:
         - type: //rec
           required: { name: //str }
           optional:
-            lm_processing: { type: //arr, length: { min: 1 }, contents: //str }
+            lm_post_load: { type: //arr, length: { min: 1 }, contents: //str }
   trainable_methods:
     type: //arr
     length: { min: 1 }
