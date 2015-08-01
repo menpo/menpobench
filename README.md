@@ -64,11 +64,12 @@ the *size of the object*. There are a number of ways to do this. In facial
 analysis, currently the most common domain of applications for deformable
 models, popularly choices include normalizing by the *interocular distance* -
 the distance between the persons two eyes. Another popular option is to
-normalize by the *face size*, defined as the area of the bounding box divided by
-two.
+normalize by the *face size*, defined as `width + height / 2` of the bounding
+box of the points.
 
-It's important to point out that the manner of normalization is not so critical,
-so long as it is applied consistently when evaluating related methods.
+Note that normalization is always done with respect to the **ground truth
+shape**. It's important to point out that the manner of normalization is not so
+critical, so long as it is applied consistently when evaluating related methods.
 
 ## Why make menpobench open source?
 
@@ -124,6 +125,42 @@ Results are returned in standard containers like PDFs and CSV files. You could
 take the results from menpobench, and easily import then into Matlab for
 analysis.
 
+
+## My fitting algorithm is written in Matlab - how can I run it from menpobench?
+
+menpobench includes support for marshaling images and landmarks from Python
+to Matlab and back again. All you need to do is write a short matlab script
+that calls your matlab code using our calling conventions - see an
+[example here](https://github.com/menpo/menpobench/blob/master/menpobench/predefined/trainable_method/yzt_iccv_2013.m). You still write a short experiment Python module
+to specify your dependencies and metadata - it looks likes this:
+```py
+from menpobench.method import (save_images_to_dir, save_landmarks_to_dir,
+                               train_matlab_method, MatlabWrapper,
+                               managed_method)
+
+metadata = {
+    'display_name': 'YZT AAM (ICCV 2013)',
+    'display_name_short': 'YZT AAM',
+    'dependencies': ['matlab']
+}
+
+def train(img_generator):
+    with managed_method('yzt_iccv_2013', cleanup=False) as method_path:
+        train_path = method_path / 'menpobench_train_images'
+        images = list(img_generator)
+
+        save_images_to_dir(images, train_path)
+        save_landmarks_to_dir(images, 'gt', train_path)
+
+        train_matlab_method(method_path, 'yzt_iccv_2013.m', train_path)
+
+        return MatlabWrapper(method_path)
+```
+
+The key difference here is that we specify that we **have a dependency on
+matlab** in the metadata information, and we just tell menpobench that we want
+to `train_matlab_method` with the script we wrote before (`yzt_iccv_2013.m`)
+
 ## How do I run tests in menpobench?
 
 The main interface for using menpobench is a command line utility,
@@ -169,16 +206,17 @@ Appearance Model (AAM) and the popular closed-source
 The test set is chosen from a standard list of test-sets that menpobench
 provides. menpobench will:
 
-1. Train an AAM and SDM on LFPW and iBUG using the 68 point iBUG face markup and
+1. Download to a cache directory a copy of LFPW, the required dataset.
+
+2. Train an AAM and SDM on LFPW and iBUG using the 68 point iBUG face markup and
 [dlib](http://dlib.net) object detector bounding boxes for initialization.
 
-2. Evaluate both the AAM and SDM trained by testing on the LFPW test set, also
+3. Evaluate both the AAM and SDM trained by testing on the LFPW test set, also
 using 68 points and dlib object detection bounding boxes.
 
 3. Additionally evaluate against intraface.
 
-4. Report back the results of the evaluation in a normalization-agnostic way, so
-you can interpret it in a number of ways.
+4. Normalize results based the report on the popular  'face size' error metric
 
 ## Wait but you are comparing against Intraface, which isn't part of menpofit
 
@@ -194,8 +232,7 @@ yourself[2].
 ## Isn't menpobench going to take forever to run?
 
 No. [Team Menpo](https://twitter.com/teammenpo) runs many popular benchmark
-options every night on a continuous integration server and records the results.
-These cached results are provided in the copy menpobench you download. By
+options on their server and saves the results to the Menpo CDN. By
 default menpobench will retrieve test results from this cached database rather
 than re-runing the test, which means evaluations can often complete
 instantaneously.
@@ -222,12 +259,8 @@ of landmarks. We could remake lots of database modules, so we might have:
 - `lfpw_train_face_ibug_48_dlib`
 
 Clearly there is a lot of repetition here, and actually the bottom 3
-d
-
-
-sdfdatasets are just subsets of the top dataset. We add the concept of
+datasets are just subsets of the top dataset. We add the concept of
 **landmark processes** to address this. A landmark process is run on each image
-
 passed through the benchmark, and can return a modified version of the landmarks.
 
 ## How do I know what a key actually does?
@@ -245,8 +278,15 @@ builtin component of menpobench, you can provide the path to your own python
 file. This python file will have to follow the same design patterns as the
 builtin files used in the relevant section. For instance, all dataset loading
 components are actually python files with a callable inside them called
-`generate_dataset()`. This is expected to be a generator yielding Menpo Image
-objects with landmarks attached with specific group names:
+`generate_dataset()`. This is expected to be a generator function yielding a
+tuple of (`identifier`, `image`).
+
+**`identifier`** is a string unique to each item in the dataset (very commonly,
+the stem of the image file suffices). It's used to match up results across
+different methods that menpobench runs.
+
+**`image`** is a Menpo Image instance with landmarks attached with specific
+group names:
 
 - `bbox` - the bounding box annotation for this image
 - `gt` - the ground truth shape of this image
