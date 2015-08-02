@@ -18,9 +18,9 @@ def images_to_mat(images, out_path, attach_ground_truth=False):
     for im in images:
         bbox = im.landmarks['bbox'].lms.bounds()
         i_dict = {'pixels': as_fortran(im.rolled_channels()),
-                  'bbox': as_fortran(np.array(bbox).ravel())}
+                  'bbox': as_fortran(1 + np.array(bbox)[:, ::-1].ravel())}
         if attach_ground_truth:
-            i_dict['gt'] = as_fortran(im.landmarks['gt'].lms.points)
+            i_dict['gt'] = as_fortran(1 + im.landmarks['gt'].lms.points[:, ::-1])
         image_dicts.append(i_dict)
 
     if not out_path.exists():

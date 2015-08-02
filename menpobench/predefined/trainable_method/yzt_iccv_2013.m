@@ -90,6 +90,8 @@ end
 
 %% Fit
 function result = fit(image_data, bbox, model_data)
+    % Convert the image to float greyscale
+    image_data = double(rgb2gray(image_data)) / 255;
     cAAM = model_data;
 
     %% initialization
