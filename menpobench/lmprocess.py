@@ -66,7 +66,7 @@ def retrieve_lm_processes(lm_process_def):
 
 
 def apply_lm_process_to_img(lm_process, img):
-    img.landmarks['gt'] = lm_process(img.landmarks['gt'].lms)
+    img.landmarks['gt'] = lm_process(img.landmarks['gt'])
     return img
 
 
