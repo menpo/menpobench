@@ -5,6 +5,7 @@ from menpobench.utils import save_json, load_json
 
 ErrorResult = namedtuple('ErrorResult', ['errors', 'path'])
 
+
 def save_test_results(results, method_name, output_dir, matlab=False):
     save_json(results, str(output_dir / '{}.json'.format(method_name)),
               pretty=True)
@@ -34,6 +35,7 @@ def plot_ceds(output_dir):
             method_names.append(result.path.stem)
             errors.append(result.errors[metric])
         plot_ced(errors, method_names, metric, output_dir)
+
 
 def plot_ced(errors, method_names, error_metric_name, output_dir):
     from matplotlib import pyplot as plt

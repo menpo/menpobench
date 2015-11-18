@@ -23,6 +23,7 @@ def invoke_train(train, training_f):
     print("Training of '{}' completed.".format(train))
     return test
 
+
 def invoke_test(test, testing_f):
     print(centre_str('testing', c='-'))
     print("Testing '{}' with {}".format(test, testing_f))
@@ -134,6 +135,7 @@ def invoke_benchmark(experiment_name, output_dir=None, overwrite=False,
             plot_ceds(output_dir)
     finally:
         TempDirectory.delete_all()
+
 
 # Runs a single method in an experiment.
 def run_method(ex, method, trainable=True, upload=False, force=False,

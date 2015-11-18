@@ -140,6 +140,7 @@ def load_module_with_error_messages(module_type, predefined_f, name,
     else:
         return module
 
+
 def load_callable_with_error_messages(module, func_name, module_name,
                                       module_type=None, generatorfunc=False):
     prefix = module_type + ' ' if module_type is not None else ''
@@ -155,6 +156,7 @@ def load_callable_with_error_messages(module, func_name, module_name,
                              "isn't a {}".format(prefix, module_name,
                                                  func_name, type_str))
     return f
+
 
 def norm_path(filepath):
     r"""
