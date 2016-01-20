@@ -3,7 +3,7 @@ import sys
 import versioneer
 import os
 
-install_requires = ['menpofit>=0.2,<0.3', 'pyyaml>=3.11,<4.0',
+install_requires = ['menpofit>=0.3,<0.4', 'pyyaml>=3.11,<4.0',
                     'docopt>=0.6.0,<0.7.0', 'pyrx==0.3.0',
                     'tinys3>=0.1.11,<0.2']
 
