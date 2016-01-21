@@ -5,6 +5,6 @@ testing_data:
     - name: lfpw_test_face_ibug_68_dlib
       lm_post_load: [face_ibug_68_to_face_ibug_66]
 trainable_methods:
-    - aam
+    - holistic_aam
 error_metric:
   - face_size

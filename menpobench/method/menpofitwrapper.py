@@ -8,13 +8,14 @@ def menpofit_to_result(fr):
 
 class MenpoFitWrapper(object):
 
-    def __init__(self, fitter):
+    def __init__(self, fitter, fit_kwargs=None):
         self.fitter = fitter
+        self.fit_kwargs = {}
+        if fit_kwargs is not None:
+            self.fit_kwargs = fit_kwargs
 
     def __call__(self, img_generator):
-        from menpo.transform import AlignmentSimilarity
         results = []
-        ref_shape = self.fitter.reference_shape
         for img in img_generator:
             # note that we don't want to crop the image in our preprocessing
             # that's because the gt on the image we are passed is what will
@@ -22,8 +23,6 @@ class MenpoFitWrapper(object):
             # is modified in size.
             img = menpo_img_process(img, crop=False)
             bbox = img.landmarks['bbox'].lms
-            shape_bb = ref_shape.bounding_box()
-            init_shape = AlignmentSimilarity(shape_bb, bbox).apply(ref_shape)
-            menpofit_fr = self.fitter.fit(img, init_shape)
+            menpofit_fr = self.fitter.fit_from_bb(img, bbox, **self.fit_kwargs)
             results.append(menpofit_to_result(menpofit_fr))
         return results

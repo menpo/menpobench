@@ -63,11 +63,14 @@ class TestsetWrapper(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         id_, img = next(self.id_img_gen)
         self.ids.append(id_)
         self.gt_shapes.append(img.landmarks.pop('gt').lms)
         return img
+
+    def next(self):
+        return self.__next__()
 
 
 # discards ids and allows gt shapes through uninterrupted

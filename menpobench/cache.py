@@ -89,7 +89,7 @@ def upload_results(results, id_):
 
 
 def hash_of_id(id_):
-    return hashlib.sha1(json.dumps(id_, sort_keys=True)).hexdigest()
+    return hashlib.sha1(json.dumps(id_, sort_keys=True).encode()).hexdigest()
 
 
 def cache_version():

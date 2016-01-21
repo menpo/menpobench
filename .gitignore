@@ -4,3 +4,4 @@
 .idea/*
 *.iml
 *.egg-info
+menpobench_result/*
