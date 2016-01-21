@@ -1,5 +1,5 @@
 import menpo.io as mio
-from menpo.landmark.labels import ibug_face_68
+from menpo.landmark.labels import face_ibug_68_to_face_ibug_68 as face_ibug_68
 from menpobench.dataset import managed_dataset
 
 metadata = {
@@ -21,5 +21,5 @@ def generate_dataset():
         for img in mio.import_images(p / '*.png',
                                      normalise=False, shuffle=True,
                                      landmark_resolver=_resolver):
-            img.landmarks['gt'] = ibug_face_68(img.landmarks['gt'])[1]
+            img.landmarks['gt'] = face_ibug_68(img.landmarks['gt'])[1]
             yield img.path.stem, img

@@ -1,6 +1,6 @@
 from menpobench.method import MenpoFitWrapper
 from menpobench.imgprocess import menpo_img_process
-from menpofit.sdm import SDMTrainer
+# from menpofit.sdm import SDMTrainer  must be updated
 
 
 metadata = {
@@ -12,10 +12,10 @@ metadata = {
 def train(img_generator):
     # clean up the images with the standard menpo pre-processing
     images = [menpo_img_process(img) for img in img_generator]
-    fitter = SDMTrainer(normalization_diagonal=150,
-                        downscale=1.1,
-                        n_perturbations=15).train(images, group='gt',
-                                                  verbose=True)
+    # fitter = SDMTrainer(normalization_diagonal=150,
+    #                     downscale=1.1,
+    #                     n_perturbations=15).train(images, group='gt',
+    #                                               verbose=True)
 
     # return a callable that wraps the menpo fitter in order to integrate with
     # menpobench
