@@ -1,11 +1,11 @@
 training_data:
-    - name: lfpw_train_face_ibug_68_dlib
-      lm_post_load: [face_ibug_68_to_face_ibug_66]
+    - lfpw_train_face_ibug_68_dlib
 testing_data:
-    - name: lfpw_test_face_ibug_68_dlib
-      lm_post_load: [face_ibug_68_to_face_ibug_66]
+    - lfpw_test_face_ibug_68_dlib
 trainable_methods:
-    - aam
+    - name: holistic_aam
+      lm_pre_train: [face_ibug_68_to_face_ibug_68_trimesh]
+    - patch_aam
     - sdm
     - yzt_iccv_2013
 error_metric:
