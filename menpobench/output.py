@@ -39,7 +39,7 @@ def plot_ceds(output_dir):
 
 def plot_ced(errors, method_names, error_metric_name, output_dir):
     from matplotlib import pyplot as plt
-    from menpofit.fittingresult import plot_cumulative_error_distribution
+    from menpofit.result import plot_cumulative_error_distribution
     # plot the ced and store it at the root.
     plot_cumulative_error_distribution(errors, legend_entries=method_names,
                                        error_range=(0, 0.05, 0.005))

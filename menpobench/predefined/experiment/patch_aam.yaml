@@ -3,10 +3,6 @@ training_data:
 testing_data:
     - lfpw_test_face_ibug_68_dlib
 trainable_methods:
-    - name: holistic_aam
-      lm_pre_train: [face_ibug_68_to_face_ibug_68_trimesh]
     - patch_aam
-    - sdm
-    - yzt_iccv_2013
 error_metric:
   - face_size

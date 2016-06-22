@@ -234,7 +234,8 @@ def centre_str(s, c=' ', width=80):
     remaining = width - len(s) - 2  # whitespace padding
     if remaining % 2 == 0:
         # remaining space evenly divides!
-        padding = remaining / 2
+        # integer division as we'll multiply with a character
+        padding = remaining // 2
         return c * padding + ' ' + s + ' ' + c * padding
     else:
         # gah, will have to be a different amount left and right

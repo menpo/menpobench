@@ -1,4 +1,5 @@
-from menpo.landmark.labels import ibug_face_66
+from menpo.landmark import face_ibug_68_to_face_ibug_66
+
 
 def process(lms):
-    return ibug_face_66(lms)[1]
+    return face_ibug_68_to_face_ibug_66(lms)

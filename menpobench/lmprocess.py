@@ -1,3 +1,5 @@
+from functools import reduce
+
 from menpobench import predefined_dir
 from menpobench.utils import (load_module_with_error_messages,
                               load_callable_with_error_messages,
@@ -22,6 +24,7 @@ def retrieve_lm_process(name):
     process = load_callable_with_error_messages(module, 'process', name,
                                                 module_type='landmark process')
     return LandmarkProcess(name, process)
+
 
 class LandmarkProcess(object):
 

@@ -77,11 +77,12 @@ def can_upload():
 
 def upload_results(results, id_):
     import tinys3
+    print(retrieve_upload_credentials())
     conn = tinys3.Connection(*retrieve_upload_credentials(), tls=True,
                              default_bucket='cdn.menpo.org',
                              endpoint='s3-eu-west-1.amazonaws.com')
     out = BytesIO()
-    with gzip.GzipFile(fileobj=out, mode="wt") as f:
+    with gzip.GzipFile(fileobj=out, mode="w") as f:
         json.dump(results, f)
     conn.upload('experiments/{}/{}.json.gz'.format(cache_version(),
                                                    hash_of_id(id_)), out)
@@ -89,7 +90,7 @@ def upload_results(results, id_):
 
 
 def hash_of_id(id_):
-    return hashlib.sha1(json.dumps(id_, sort_keys=True)).hexdigest()
+    return hashlib.sha1(json.dumps(id_, sort_keys=True).encode()).hexdigest()
 
 
 def cache_version():
